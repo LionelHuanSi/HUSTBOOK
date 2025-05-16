@@ -1,4 +1,4 @@
-package com.hedspi.javalorant.Inventory;
+package com.hedspi.javalorant.inventory;
 
 public class Inventory {
     

@@ -1,4 +1,4 @@
-package com.hedspi.javalorant.Order;
+package com.hedspi.javalorant.order;
 
 public class CustomerInfor {
     

@@ -1,4 +1,4 @@
-package com.hedspi.javalorant.Expense;
+package com.hedspi.javalorant.expense;
 
 public class Expense {
     
