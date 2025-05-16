@@ -15,16 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Product;
-import com.hedspi.javalorant.models.User;
 import com.hedspi.javalorant.order.Invoice;
 import com.hedspi.javalorant.order.Order;
 import com.hedspi.javalorant.store.Store;
+import com.hedspi.javalorant.user.User;
 
 @RestController
 @RequestMapping("/api/javalorant")
 public class JavalorantController {
     public final Store store = new Store("javalorantStore");
 
+    
     public JavalorantController() {
         store.initializeData();
     }
@@ -32,6 +33,8 @@ public class JavalorantController {
     // User Management APIs
     @GetMapping("/users")
     public List<User> getAllUsers() {
+        System.out.println("Store hashCode: " + store.hashCode());
+        System.out.println("UserList hashCode: " + store.getUserList().hashCode());
         return store.getUserList();
     }
 

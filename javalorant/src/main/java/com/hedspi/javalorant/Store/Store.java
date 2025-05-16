@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.hedspi.javalorant.expense.Expense; 
+import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
 import com.hedspi.javalorant.inventory.Inventory;
 import com.hedspi.javalorant.inventory.Product;
 import com.hedspi.javalorant.inventory.Stationary;
 import com.hedspi.javalorant.inventory.Toy;
-import com.hedspi.javalorant.models.User;
-import com.hedspi.javalorant.models.UserRole;
 import com.hedspi.javalorant.order.CustomerInfor;
 import com.hedspi.javalorant.order.Invoice;
 import com.hedspi.javalorant.order.Order;
 import com.hedspi.javalorant.order.PaymentMethod;
+import com.hedspi.javalorant.user.User;
+import com.hedspi.javalorant.user.UserRole;
 
+//@Service
 public class Store {
     private final String storeName;
     private final Inventory inventory;
@@ -135,19 +136,19 @@ public class Store {
     }
 
     public List<Order> getOrderList() {
-        return new ArrayList<>(orderList);
+        return orderList;
     }
 
     public List<Invoice> getInvoiceList() {
-        return new ArrayList<>(invoiceList);
+        return invoiceList;
     }
 
     public List<Expense> getExpenseList() {
-        return new ArrayList<>(expenseList);
+        return expenseList;
     }
 
     public List<User> getUserList() {
-        return new ArrayList<>(userList);
+        return userList;
     }
 
     public void initializeData() {
