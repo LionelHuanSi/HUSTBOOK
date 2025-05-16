@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="javalorant/hustbook/store/|javalorant/hustbook/invoice/|javalorant/hustbook/user/|javalorant/hustbook/|javalorant/hustbook/expense/|javalorant/hustbook/inventory/" kind="src" path="src"/>
+	<classpathentry excluding="store/|invoice/|user/|expense/|inventory/" kind="src" path="src/javalorant/hustbook"/>
+	<classpathentry kind="src" path="src/javalorant/hustbook/expense"/>
+	<classpathentry kind="src" path="src/javalorant/hustbook/inventory"/>
+	<classpathentry kind="src" path="src/javalorant/hustbook/invoice"/>
+	<classpathentry kind="src" path="src/javalorant/hustbook/store"/>
+	<classpathentry kind="src" path="src/javalorant/hustbook/user"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
