@@ -1,6 +1,6 @@
 package com.hedspi.javalorant.inventory;
 
-public class Product {
+public abstract class Product {
     private String productID;
     private String name;
     private int quantity;
@@ -68,4 +68,6 @@ public class Product {
     public double getUnitProfit() {
         return sellingPrice - purchasePrice;
     }
+
+    public abstract String getProductType();
 }
