@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.hedspi.javalorant.expense.Expense;
+import com.hedspi.javalorant.expense.Expense; 
 import com.hedspi.javalorant.inventory.Book;
 import com.hedspi.javalorant.inventory.Inventory;
 import com.hedspi.javalorant.inventory.Product;
