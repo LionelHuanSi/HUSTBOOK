@@ -1,29 +1,19 @@
 package javalorant.hustbook.order;
 
+import javalorant.hustbook.product.Product;
+
 public class OrderItem {
     private Product product;
-    private int Quantity;
+    private int quantity;
 
-    public OrderItem(Product product, int Quantity){
+    public OrderItem(Product product, int quantity) {
         this.product = product;
-        this.Quantity = Quantity;
+        this.quantity = quantity;
     }
 
-    public Product getProduct() {
-        return product;
-    }
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public int getQuantity() {
-        return Quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        Quantity = quantity;
-    }
-
-    
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 }

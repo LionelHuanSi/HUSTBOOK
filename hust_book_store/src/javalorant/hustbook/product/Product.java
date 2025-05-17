@@ -1,63 +1,65 @@
-package product;
+package javalorant.hustbook.product;
 
 public abstract class Product {
-	private String productID;
-	private String name;
-	private int quantity;
-	private double purchasePrice;
-	private double sellingPrice;
-	
-	public Product(String productID, String name, int quantity, double purchasePrice, double sellingPrice) {
-		this.productID = productID;
-		this.name = name;
-		this.quantity = quantity;
-		this.purchasePrice = purchasePrice;
-		this.sellingPrice = sellingPrice;
-	}
+    private String productID;
+    private String name;
+    private int quantity;
+    private double purchasePrice;
+    private double sellingPrice;
 
-	public String getProductID() {
-		return productID;
-	}
+    public Product(String productID, String name, int quantity, double purchasePrice, double sellingPrice) {
+        this.productID = productID;
+        this.name = name;
+        this.quantity = quantity;
+        this.purchasePrice = purchasePrice;
+        this.sellingPrice = sellingPrice;
+    }
 
-	public void setProductID(String productID) {
-		this.productID = productID;
-	}
+    public String getProductID() {
+        return productID;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setProductID(String productID) {
+        this.productID = productID;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public int getQuantity() {
-		return quantity;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
+    public int getQuantity() {
+        return quantity;
+    }
 
-	public double getPurchasePrice() {
-		return purchasePrice;
-	}
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
-	public void setPurchasePrice(double purchasePrice) {
-		this.purchasePrice = purchasePrice;
-	}
+    public double getPurchasePrice() {
+        return purchasePrice;
+    }
 
-	public double getSellingPrice() {
-		return sellingPrice;
-	}
+    public void setPurchasePrice(double purchasePrice) {
+        this.purchasePrice = purchasePrice;
+    }
 
-	public void setSellingPrice(double sellingPrice) {
-		this.sellingPrice = sellingPrice;
-	}
-	
-	public abstract String getProductType();
-	
-	public double getUnitProfit() {
-		return sellingPrice - purchasePrice;
-	}
+    public double getSellingPrice() {
+        return sellingPrice;
+    }
+
+    public void setSellingPrice(double sellingPrice) {
+        this.sellingPrice = sellingPrice;
+    }
+
+    /** Lợi nhuận trên mỗi sản phẩm **/
+    public double getUnitProfit() {
+        return sellingPrice - purchasePrice;
+    }
+
+
+    public abstract String getProductType();
 }

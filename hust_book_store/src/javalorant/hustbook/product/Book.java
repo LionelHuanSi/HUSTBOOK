@@ -1,42 +1,43 @@
-package product;
+package javalorant.hustbook.product;
 
 public class Book extends Product {
-	private String publisher;
-	private String author;
-	private String isbn;
-	
-	public Book(String productID, String name, int quantity, double purchasePrice, double sellingPrice, String publisher, String author, String isbn) {
-		super(productID, name, quantity, purchasePrice, sellingPrice);
-		this.publisher = publisher;
-		this.author = author;
-		this.isbn = isbn;
-	}
+    private String publisher;
+    private String author;
+    private String isbn;
 
-	public String getPublisher() {
-		return publisher;
-	}
+    public Book(String productID, String name, int quantity,double purchasePrice, double sellingPrice,String publisher, String author, String isbn) {
+        super(productID, name, quantity, purchasePrice, sellingPrice);
+        this.publisher = publisher;
+        this.author = author;
+        this.isbn = isbn;
+    }
 
-	public void setPublisher(String publisher) {
-		this.publisher = publisher;
-	}
+    public String getPublisher() {
+        return publisher;
+    }
 
-	public String getAuthor() {
-		return author;
-	}
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
+    public String getAuthor() {
+        return author;
+    }
 
-	public String getIsbn() {
-		return isbn;
-	}
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
-	public void setIsbn(String isbn) {
-		this.isbn = isbn;
-	}
-	
-	public String getProductType() {
-		return "Book";
-	}
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    @Override
+    public String getProductType() {
+        return "Book";
+    }
 }
