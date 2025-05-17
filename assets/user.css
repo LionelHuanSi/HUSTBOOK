@@ -1,4 +1,4 @@
-.inventory-management {
+.user-management {
   background: var(--clr-white);
   border-radius: var(--border-radius-2);
   box-shadow: var(--box-shadow);
@@ -10,14 +10,31 @@
   min-height: 92vh;
 }
 
-.inventory-actions {
+.user-management-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(
+    90deg,
+    var(--clr-primary) 0%,
+    var(--clr-primary-variant) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.user-actions {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-/* Chỉ style cho nút thêm ở trên */
-.inventory-actions .btn-add {
+.user-actions .btn-add {
   padding: 0.5rem 1.2rem;
   border-radius: var(--border-radius-1);
   border: none;
@@ -27,53 +44,27 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.inventory-actions .btn-add:hover {
+.user-actions .btn-add:hover {
   opacity: 0.85;
 }
 
-/* Style cho nút trong bảng */
-.inventory-table .btn-edit,
-.inventory-table .btn-delete {
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin-right: 0.3rem;
-  transition: background 0.2s;
-}
-.inventory-table .btn-edit {
-  background: var(--clr-success);
-  color: var(--clr-white);
-}
-.inventory-table .btn-delete {
-  background: var(--clr-danger);
-  color: var(--clr-white);
-}
-.inventory-table .btn-edit:hover,
-.inventory-table .btn-delete:hover {
-  opacity: 0.85;
-}
-
-.inventory-filters {
+.user-filters {
   display: flex;
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
 }
-.inventory-filters select,
-.inventory-filters input[type="text"],
-.inventory-filters input[type="number"] {
+.user-filters input[type="text"],
+.user-filters input[type="number"] {
   padding: 0.4rem 0.8rem;
   border-radius: var(--border-radius-1);
   border: 1px solid var(--clr-info-light);
   background: var(--clr-light);
   font-size: 1rem;
 }
-.inventory-filters .btn-view-all,
-.inventory-filters .btn-filter {
+.user-filters .btn-view-all,
+.user-filters .btn-filter {
   padding: 0.4rem 1rem;
   border-radius: var(--border-radius-1);
   border: none;
@@ -83,17 +74,17 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.inventory-filters .btn-view-all {
+.user-filters .btn-view-all {
   background: var(--clr-info-dark);
 }
-.inventory-filters .btn-filter {
+.user-filters .btn-filter {
   background: var(--clr-success);
 }
-.inventory-filters button:hover {
+.user-filters button:hover {
   opacity: 0.85;
 }
 
-.inventory-table {
+.user-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--clr-white);
@@ -101,51 +92,63 @@
   overflow: hidden;
   box-shadow: var(--box-shadow);
 }
-.inventory-table th,
-.inventory-table td {
+.user-table th,
+.user-table td {
   padding: 0.8rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--clr-info-light);
 }
-.inventory-table th {
+.user-table th {
   background: var(--clr-light);
   color: var(--clr-dark);
   font-weight: 600;
 }
-.inventory-table tr:last-child td {
+.user-table tr:last-child td {
   border-bottom: none;
 }
-.inventory-table tr:hover {
+.user-table tr:hover {
   background: var(--clr-light);
 }
-
-.order-management-title,
-.inventory-management h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--clr-primary);
-  margin-bottom: 1.5rem;
-  letter-spacing: 1px;
-  text-align: left;
-  line-height: 1.2;
+.user-table .btn-edit,
+.user-table .btn-delete {
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 0.3rem;
+  transition: background 0.2s;
+}
+.user-table .btn-edit {
+  background: var(--clr-success);
+  color: var(--clr-white);
+}
+.user-table .btn-delete {
+  background: var(--clr-danger);
+  color: var(--clr-white);
+}
+.user-table .btn-edit:hover,
+.user-table .btn-delete:hover {
+  opacity: 0.85;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
-  .inventory-management {
+  .user-management {
     padding: 1rem;
   }
-  .inventory-filters {
+  .user-filters {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
   }
-  .inventory-actions {
+  .user-actions {
     flex-direction: column;
     gap: 0.5rem;
   }
-  .inventory-table th,
-  .inventory-table td {
+  .user-table th,
+  .user-table td {
     padding: 0.5rem 0.5rem;
   }
 }
