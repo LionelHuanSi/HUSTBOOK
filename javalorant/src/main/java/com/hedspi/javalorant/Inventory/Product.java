@@ -7,7 +7,6 @@ public abstract class Product {
     private int quantity;
     private double purchasePrice;
     private double sellingPrice;
-    private int unitSold;
 
     public Product(String name, int quantity, double purchasePrice, double sellingPrice) {
         Product.countProduct++;
@@ -16,7 +15,6 @@ public abstract class Product {
         this.quantity = quantity;
         this.purchasePrice = purchasePrice;
         this.sellingPrice = sellingPrice;
-        this.unitSold = 0;
     }
 
     public long getProductID() {
@@ -66,14 +64,6 @@ public abstract class Product {
             throw new IllegalArgumentException("Selling price cannot be negative");
         }
         this.sellingPrice = sellingPrice;
-    }
-
-    public int getUnitSold() {
-        return unitSold;
-    }
-
-    public void setUnitSold(int unitSold) {
-        this.unitSold = unitSold;
     }
 
     public double getUnitProfit() {

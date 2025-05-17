@@ -47,7 +47,6 @@ public class Inventory {
                 product.setPurchasePrice(updatedProduct.getPurchasePrice());
                 product.setSellingPrice(updatedProduct.getSellingPrice());
                 product.setQuantity(updatedProduct.getQuantity());
-                product.setUnitSold(updatedProduct.getUnitSold());
                 switch (product) {
                     case Book book -> {
                         book.setPublisher(((Book) updatedProduct).getPublisher());

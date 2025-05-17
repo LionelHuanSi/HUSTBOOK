@@ -1,14 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import AddProductForm from "../../components/AddProductForm/AddProductForm";
 import "./Inventory.css";
 import "../../styles/base.css";
-import { useNavigate } from "react-router-dom";
+import { getAllProducts } from "../../services/InventoryService";
+import { deleteProduct } from "../../services/InventoryService";
 
 const Inventory = () => {
+  const [inventory, setInventory] = useState([]);
+  const [error, setError] = useState(null);
+  const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await getAllProducts();
+        setInventory(response);
+      } catch (error) {
+        setError(error);
+      }
+    };
+
+    fetchInventory();
+  }, [isAddButtonClicked]);
+
+  const handleAddButtonClick = () => {
+    setIsAddButtonClicked(true);
+  };
+
+  const handleCloseAddProductForm = () => {
+    setIsAddButtonClicked(false);
+  };
+
+  const hanleGetAllProducts = async () => {
+    try {
+      const response = await getAllProducts();
+      setInventory(response);
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  const handleDeleteProduct = async (productID) => {
+    try {
+      const response = await deleteProduct(productID);
+      if (response === false) {
+        alert("Xóa sản phẩm không thành công");
+        return;
+      }
+      setInventory((prevInventory) =>
+        prevInventory.filter((product) => product.productID !== productID)
+      );
+    } catch (error) {
+      setError(error);
+    }
+  };
 
   return (
     <div className="container">
@@ -27,22 +77,33 @@ const Inventory = () => {
         </div>
 
         <section className="inventory-management">
+          {error && (
+            <div className="error-message">
+              <p>Đã xảy ra lỗi khi tải dữ liệu: {error.message}</p>
+            </div>
+          )}
           <h1>Quản lý kho hàng</h1>
           <div className="inventory-actions">
-            <button className="btn-add">Thêm sản phẩm</button>
+            <button className="btn-add" onClick={handleAddButtonClick}>
+              Thêm sản phẩm
+            </button>
           </div>
-
+          {isAddButtonClicked && (
+            <AddProductForm onClose={handleCloseAddProductForm} />
+          )}
           <div className="inventory-filters">
-            <button className="btn-view-all">Duyệt toàn bộ</button>
+            <button className="btn-view-all" onClick={hanleGetAllProducts}>
+              Duyệt toàn bộ
+            </button>
             <select
               className="filter-category"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
-              <option value="">-- Thể loại --</option>
-              <option value="sach-giao-khoa">Sách giáo khoa</option>
-              <option value="tieu-thuyet">Tiểu thuyết</option>
-              <option value="truyen-tranh">Truyện tranh</option>
+              <option value="">Tất cả thể loại</option>
+              <option value="sach-giao-khoa">Sách</option>
+              <option value="tieu-thuyet">Văn phòng phẩm</option>
+              <option value="truyen-tranh">Đồ chơi</option>
             </select>
             <input
               type="text"
@@ -82,20 +143,35 @@ const Inventory = () => {
                 <th>Hành động</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>SP001</td>
-                <td>Giáo trình Toán</td>
-                <td>Sách giáo khoa</td>
-                <td>50</td>
-                <td>60</td>
-                <td>100</td>
-                <td>
-                  <button className="btn-edit">Sửa</button>
-                  <button className="btn-delete">Xoá</button>
-                </td>
-              </tr>
-            </tbody>
+            {inventory.length > 0 ? (
+              <tbody>
+                {inventory.map((product) => (
+                  <tr key={product.productID}>
+                    <td>{product.productID}</td>
+                    <td>{product.name}</td>
+                    <td>{product.productType}</td>
+                    <td>{product.purchasePrice}</td>
+                    <td>{product.sellingPrice}</td>
+                    <td>{product.quantity}</td>
+                    <td>
+                      <button className="btn-edit">Sửa</button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteProduct(product.productID)}
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ) : (
+              <tbody>
+                <tr>
+                  <td colSpan="7">Không có sản phẩm nào trong kho.</td>
+                </tr>
+              </tbody>
+            )}
           </table>
         </section>
       </main>
