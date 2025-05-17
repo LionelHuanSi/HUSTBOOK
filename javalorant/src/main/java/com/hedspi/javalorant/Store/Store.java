@@ -37,6 +37,12 @@ public class Store {
         this.userList = new ArrayList<>();
     }
 
+
+
+
+
+
+    /////////////// User Management //////////////
     public void addUser(User user) {
         userList.add(user);
     }
@@ -58,6 +64,10 @@ public class Store {
         }
     }
 
+    public List<User> getUserList() {
+        return userList;
+    }
+
     public User getUserByUsername(String username) {
         return userList.stream()
                 .filter(user -> user.getUsername().equals(username))
@@ -65,6 +75,13 @@ public class Store {
                 .orElse(null);
     }
 
+
+
+
+
+
+
+    /////////////// Inventory Management //////////////
     public void addProduct(Product product) {
         inventory.addProduct(product);
     }
@@ -77,10 +94,21 @@ public class Store {
         inventory.updateProduct(product);
     }
 
+    public Inventory getInventory() {
+        return inventory;
+    }
+
     public Product getProductByName(String name) {
         return inventory.getProductByName(name);
     }
 
+
+
+
+
+
+
+    //////////////// Order Management //////////////
     public void createOrder(Date orderDate) {
         Order newOrder = new Order(orderDate);
         orderList.add(newOrder);
@@ -89,6 +117,24 @@ public class Store {
     public void createOrder(Date orderDate, CustomerInfor customerInfo) {
         Order newOrder = new Order(orderDate, customerInfo);
         orderList.add(newOrder);
+    }
+
+    public boolean removeOrder(long orderID) {
+        return orderList.removeIf(order -> order.getOrderID() == orderID);
+    }
+
+    public void updateOrder(Order order) {
+        for (Order existingOrder : orderList) {
+            if (existingOrder.getOrderID() == order.getOrderID()) {
+                existingOrder.setCustomerInfo(order.getCustomerInfo());
+                existingOrder.setIsPaid(order.isPaid());
+                break;
+            }
+        }
+    }
+
+    public List<Order> getOrderList() {
+        return orderList;
     }
 
     public Order getOrder(long orderID) {
@@ -167,14 +213,6 @@ public class Store {
         return storeName;
     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public List<Order> getOrderList() {
-        return orderList;
-    }
-
     public List<Invoice> getInvoiceList() {
         return invoiceList;
     }
@@ -183,9 +221,7 @@ public class Store {
         return expenseList;
     }
 
-    public List<User> getUserList() {
-        return userList;
-    }
+    
 
     public void initializeData() {
         // Initialize Users
