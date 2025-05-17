@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="assets/home.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <aside>
+        <div class="top">
+          <div class="logo">
+            <img
+              src="https://qldt.hust.edu.vn/students/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fset-hust.appspot.com%2F2024-11-14_11-18-36%252Flogo.png&w=256&q=75"
+              alt=""
+            />
+            <h2>H<span>ust book store</span></h2>
+          </div>
+        </div>
+        <div class="slidebar">
+          <a href="" class="active">
+            <span class="material-symbols-sharp"> store</span>
+            <h3>Quản lý kho</h3>
+          </a>
+          <a href="">
+            <span class="material-symbols-sharp"> receipt_long</span>
+            <h3>Quản lý đơn hàng</h3>
+          </a>
+          <a href="">
+            <span class="material-symbols-sharp"> receipt</span>
+            <h3>Quản lý hóa đơn</h3>
+          </a>
+          <a href="">
+            <span class="material-symbols-sharp"> badge</span>
+            <h3>Quản lý nhân viên</h3>
+          </a>
+          <a href="">
+            <span class="material-symbols-sharp"> request_quote</span>
+            <h3>Quản lý tài chính</h3>
+          </a>
+          <a href="">
+            <span class="material-symbols-sharp"> logout</span>
+            <h3>Đăng xuất</h3>
+          </a>
+        </div>
+      </aside>
+      <main>
+        <div class="topbar">
+          <div class="search">
+            <label for="">
+              <input type="text" placeholder="Tìm kiếm..." />
+              <span class="material-symbols-sharp"> search </span>
+            </label>
+          </div>
+          <div class="user">
+            <img src="assets/Customer1.png" alt="" />
+          </div>
+        </div>
+        <!-- Quản lý kho -->
+        <section class="inventory-management">
+          <h1>Quản lý kho hàng</h1>
+          <div class="inventory-actions">
+            <button class="btn-add">Thêm sản phẩm</button>
+          </div>
+          <div class="inventory-filters">
+            <button class="btn-view-all">Duyệt toàn bộ</button>
+            <select class="filter-category">
+              <option value="">-- Thể loại --</option>
+              <option value="sach-giao-khoa">Sách giáo khoa</option>
+              <option value="tieu-thuyet">Tiểu thuyết</option>
+              <option value="truyen-tranh">Truyện tranh</option>
+              <!-- ... -->
+            </select>
+            <input
+              type="text"
+              class="filter-name"
+              placeholder="Tìm theo tên sản phẩm"
+            />
+            <input
+              type="number"
+              class="filter-price-buy"
+              placeholder="Giá mua từ"
+              min="0"
+            />
+            <input
+              type="number"
+              class="filter-price-sell"
+              placeholder="Giá bán từ"
+              min="0"
+            />
+            <button class="btn-filter">Lọc</button>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Thể loại</th>
+                <th>Giá mua</th>
+                <th>Giá bán</th>
+                <th>Số lượng</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dữ liệu sản phẩm sẽ được render ở đây -->
+              <tr>
+                <td>SP001</td>
+                <td>Giáo trình Toán</td>
+                <td>Sách giáo khoa</td>
+                <td>50</td>
+                <td>60</td>
+                <td>100</td>
+                <td>
+                  <button class="btn-edit">Sửa</button>
+                  <button class="btn-delete">Xoá</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
