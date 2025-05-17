@@ -1,37 +1,44 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import "./Sidebar.css";
+import "../../styles/base.css";
 
 const Sidebar = () => {
-  const [sidebarData, setSidebarData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/posts")
-      .then((response) => response.json())
-      .then((data) => {
-        setSidebarData(data);
-        setLoading(false);
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <div>
-      <h1>Sidebar List</h1>
-      <ul>
-        {sidebarData.map((item) => (
-          <li key={item.id} onClick={() => navigate(`/sidebar/${item.id}`)}>
-            {item.title}
-          </li>
+    <aside>
+      <div className="top">
+        <div className="logo">
+          <img src="/assets/images/logo.png" alt="" />
+          <h2>
+            <span>Hust book store</span>
+          </h2>
+        </div>
+      </div>
+      <div className="slidebar">
+        {[
+          { path: "/inventory", icon: "store", text: "Quản lý kho" },
+          { path: "/order", icon: "receipt_long", text: "Quản lý đơn hàng" },
+          { path: "/invoice", icon: "receipt", text: "Quản lý hóa đơn" },
+          { path: "/employee", icon: "badge", text: "Quản lý nhân viên" },
+          {
+            path: "/finance",
+            icon: "request_quote",
+            text: "Quản lý tài chính",
+          },
+          { path: "/logout", icon: "logout", text: "Đăng xuất" },
+        ].map(({ path, icon, text }) => (
+          <NavLink
+            key={path}
+            to={path}
+            className={({ isActive }) => (isActive ? "active" : "")}
+          >
+            <span className="material-symbols-sharp">{icon}</span>
+            <h3>{text}</h3>
+          </NavLink>
         ))}
-      </ul>
-    </div>
+      </div>
+    </aside>
   );
 };
+
 export default Sidebar;

@@ -1,0 +1,117 @@
+.bill-management {
+  background: var(--clr-white);
+  border-radius: var(--border-radius-2);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-height: 92vh;
+}
+
+.bill-management-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(
+    90deg,
+    var(--clr-primary) 0%,
+    var(--clr-primary-variant) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.bill-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.bill-filters select,
+.bill-filters input[type="date"] {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  border: 1px solid var(--clr-info-light);
+  background: var(--clr-light);
+  font-size: 1rem;
+}
+
+.bill-filters .btn-view-all,
+.bill-filters .btn-filter {
+  padding: 0.4rem 1rem;
+  border-radius: var(--border-radius-1);
+  border: none;
+  background: var(--clr-primary-variant);
+  color: var(--clr-white);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bill-filters .btn-view-all {
+  background: var(--clr-info-dark);
+}
+
+.bill-filters .btn-filter {
+  background: var(--clr-success);
+}
+
+.bill-filters button:hover {
+  opacity: 0.85;
+}
+
+.bill-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--clr-white);
+  border-radius: var(--border-radius-2);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.bill-table th,
+.bill-table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--clr-info-light);
+}
+
+.bill-table th {
+  background: var(--clr-light);
+  color: var(--clr-dark);
+  font-weight: 600;
+}
+
+.bill-table tr:last-child td {
+  border-bottom: none;
+}
+
+.bill-table tr:hover {
+  background: var(--clr-light);
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .bill-management {
+    padding: 1rem;
+  }
+  .bill-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .bill-table th,
+  .bill-table td {
+    padding: 0.5rem 0.5rem;
+  }
+}
