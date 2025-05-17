@@ -10,27 +10,18 @@ public class Inventory {
         this.productList = new ArrayList<>();
     }
 
-    public void addProduct(Product product) {
-        productList.add(product);
-    }
-
-    public boolean removeProduct(String productID) {
-        return productList.removeIf(product -> product.getProductID().equals(productID));
-    }
-
-    public boolean updateQuantity(String productID, int newQuantity) {
+    public Product getProductByID(long productID) {
         for (Product product : productList) {
-            if (product.getProductID().equals(productID)) {
-                product.setQuantity(newQuantity);
-                return true;
+            if (product.getProductID() == productID) {
+                return product;
             }
         }
-        return false;
+        return null;
     }
 
-    public Product getProductByID(String productID) {
+    public Product getProductByName(String name) {
         for (Product product : productList) {
-            if (product.getProductID().equals(productID)) {
+            if (product.getName().equalsIgnoreCase(name)) {
                 return product;
             }
         }
@@ -38,8 +29,44 @@ public class Inventory {
     }
 
     public List<Product> getAllProducts() {
-        return new ArrayList<>(productList);
+        return productList;
     }
+
+    public void addProduct(Product product) {
+        productList.add(product);
+    }
+
+    public boolean removeProduct(long productID) {
+        return productList.removeIf(product -> product.getProductID() == productID);
+    }
+
+    public boolean updateProduct(Product updatedProduct) {
+        for (Product product : productList) {
+            if (product.getProductID() == updatedProduct.getProductID()) {
+                product.setName(updatedProduct.getName());
+                product.setPurchasePrice(updatedProduct.getPurchasePrice());
+                product.setSellingPrice(updatedProduct.getSellingPrice());
+                product.setQuantity(updatedProduct.getQuantity());
+                product.setUnitSold(updatedProduct.getUnitSold());
+                switch (product) {
+                    case Book book -> {
+                        book.setPublisher(((Book) updatedProduct).getPublisher());
+                        book.setAuthor(((Book) updatedProduct).getAuthor());
+                        book.setISBN(((Book) updatedProduct).getISBN());
+                    }
+                    case Stationary stationary -> {
+                        stationary.setBrand(((Stationary) updatedProduct).getBrand());
+                        stationary.setStationaryType(((Stationary) updatedProduct).getStationaryType());
+                    }
+                    case Toy toy -> toy.setSuitableAge(((Toy) updatedProduct).getSuitableAge());
+                    default -> {
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }    
 
     public double getTotalInventoryValue() {
         double total = 0;

@@ -1,21 +1,23 @@
 package com.hedspi.javalorant.order;
 
 public class CustomerInfor {
-    private String customerID;
+    public static long countCustomer = 0;
+    private long customerID;
     private String name;
     private String contactInfo;
 
-    public CustomerInfor(String customerID, String name, String contactInfo) {
-        this.customerID = customerID;
+    public CustomerInfor(String name, String contactInfo) {
+        CustomerInfor.countCustomer++;
+        this.customerID = CustomerInfor.countCustomer;
         this.name = name;
         this.contactInfo = contactInfo;
     }
 
-    public String getCustomerID() {
+    public long getCustomerID() {
         return customerID;
     }
 
-    public void setCustomerID(String customerID) {
+    public void setCustomerID(long customerID) {
         this.customerID = customerID;
     }
 

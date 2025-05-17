@@ -1,15 +1,17 @@
 package com.hedspi.javalorant.inventory;
 
 public abstract class Product {
-    private String productID;
+    public static long countProduct = 0;
+    private long productID;
     private String name;
     private int quantity;
     private double purchasePrice;
     private double sellingPrice;
     private int unitSold;
 
-    public Product(String productID, String name, int quantity, double purchasePrice, double sellingPrice) {
-        this.productID = productID;
+    public Product(String name, int quantity, double purchasePrice, double sellingPrice) {
+        Product.countProduct++;
+        this.productID = Product.countProduct;
         this.name = name;
         this.quantity = quantity;
         this.purchasePrice = purchasePrice;
@@ -17,11 +19,11 @@ public abstract class Product {
         this.unitSold = 0;
     }
 
-    public String getProductID() {
+    public long getProductID() {
         return productID;
     }
 
-    public void setProductID(String productID) {
+    public void setProductID(long productID) {
         this.productID = productID;
     }
 
@@ -38,6 +40,9 @@ public abstract class Product {
     }
 
     public void setQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
         this.quantity = quantity;
     }
 
@@ -46,6 +51,9 @@ public abstract class Product {
     }
 
     public void setPurchasePrice(double purchasePrice) {
+        if (purchasePrice < 0) {
+            throw new IllegalArgumentException("Purchase price cannot be negative");
+        }
         this.purchasePrice = purchasePrice;
     }
 
@@ -54,6 +62,9 @@ public abstract class Product {
     }
 
     public void setSellingPrice(double sellingPrice) {
+        if (sellingPrice < 0) {
+            throw new IllegalArgumentException("Selling price cannot be negative");
+        }
         this.sellingPrice = sellingPrice;
     }
 

@@ -1,40 +1,62 @@
 package com.hedspi.javalorant.user;
 
 public class User {
-    private String User_ID;
-    private String Username;
-    private String Password;
+    public static long countUser = 0;
+    private long user_ID;
+    private String username;
+    private String password;
+    private String fullName;
+    private String phoneNumber;
     private UserRole Role;
 
-    public User(String userID, String username, String password, UserRole role) {
-        this.User_ID = userID;
-        this.Username = username;
-        this.Password = password;
+    public User(String username, String password, String fullName, String phoneNumber, UserRole role) {
+        User.countUser++;
+        this.user_ID = countUser;
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
         this.Role = role;
     }
 
-    public String getUserID() {
-        return User_ID;
+    public long getUserID() {
+        return user_ID;
     }
 
-    public void setUserID(String userID) {
-        this.User_ID = userID;
+    public void setUserID(long userID) {
+        this.user_ID = userID;
     }
 
     public String getUsername() {
-        return Username;
+        return username;
     }
 
     public void setUsername(String username) {
-        this.Username = username;
+        this.username = username;
     }
 
     public String getPassword() {
-        return Password;
+        return password;
     }
 
     public void setPassword(String password) {
-        this.Password = password;
+        this.password = password;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public UserRole getRole() {
@@ -46,6 +68,6 @@ public class User {
     }
 
     public boolean authenticate(String inputPassword) {
-        return this.Password.equals(inputPassword);
+        return this.password.equals(inputPassword);
     }
 }

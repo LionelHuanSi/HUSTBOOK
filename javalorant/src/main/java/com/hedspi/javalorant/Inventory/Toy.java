@@ -4,9 +4,9 @@ public class Toy extends Product {
     private String brand;
     private int suitableAge;
 
-    public Toy(String productID, String name, int quantity, double purchasePrice,
+    public Toy(String name, int quantity, double purchasePrice,
               double sellingPrice, String brand, int suitableAge) {
-        super(productID, name, quantity, purchasePrice, sellingPrice);
+        super(name, quantity, purchasePrice, sellingPrice);
         this.brand = brand;
         this.suitableAge = suitableAge;
     }

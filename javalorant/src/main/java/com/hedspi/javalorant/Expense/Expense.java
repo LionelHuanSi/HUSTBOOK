@@ -3,25 +3,27 @@ package com.hedspi.javalorant.expense;
 import java.util.Date;
 
 public class Expense {
-    private String expenseID;
+    public static long countExpense = 0;
+    private long expenseID;
     private String expenseType;
     private double amount;
     private Date date;
     private String description;
 
-    public Expense(String expenseID, String expenseType, double amount, Date date, String description) {
-        this.expenseID = expenseID;
+    public Expense(String expenseType, double amount, Date date, String description) {
+        Expense.countExpense++;
+        this.expenseID = Expense.countExpense;
         this.expenseType = expenseType;
         this.amount = amount;
         this.date = date;
         this.description = description;
     }
 
-    public String getExpenseID() {
+    public long getExpenseID() {
         return expenseID;
     }
 
-    public void setExpenseID(String expenseID) {
+    public void setExpenseID(long expenseID) {
         this.expenseID = expenseID;
     }
 

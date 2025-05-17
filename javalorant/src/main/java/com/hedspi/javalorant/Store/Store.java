@@ -13,7 +13,9 @@ import com.hedspi.javalorant.inventory.Toy;
 import com.hedspi.javalorant.order.CustomerInfor;
 import com.hedspi.javalorant.order.Invoice;
 import com.hedspi.javalorant.order.Order;
+import com.hedspi.javalorant.order.OrderItem;
 import com.hedspi.javalorant.order.PaymentMethod;
+import com.hedspi.javalorant.user.Employee;
 import com.hedspi.javalorant.user.User;
 import com.hedspi.javalorant.user.UserRole;
 
@@ -39,6 +41,23 @@ public class Store {
         userList.add(user);
     }
 
+    public boolean removeUser(long userID) {
+        return userList.removeIf(user -> user.getUserID() == userID);
+    }
+
+    public void updateUser(User updateUser) {
+        for (User user : userList) {
+            if (user.getUserID() == updateUser.getUserID()) {
+                user.setUsername(updateUser.getUsername());
+                user.setPassword(updateUser.getPassword());
+                user.setFullName(updateUser.getFullName());
+                user.setPhoneNumber(updateUser.getPhoneNumber());
+                user.setRole(updateUser.getRole());
+                break;
+            }
+        }
+    }
+
     public User getUserByUsername(String username) {
         return userList.stream()
                 .filter(user -> user.getUsername().equals(username))
@@ -50,34 +69,51 @@ public class Store {
         inventory.addProduct(product);
     }
 
-    public boolean removeProduct(String productID) {
+    public boolean removeProduct(long productID) {
         return inventory.removeProduct(productID);
     }
 
-    public void createOrder(String orderID, Date orderDate) {
-        Order newOrder = new Order(orderID, orderDate);
+    public void updateProduct(Product product) {
+        inventory.updateProduct(product);
+    }
+
+    public Product getProductByName(String name) {
+        return inventory.getProductByName(name);
+    }
+
+    public void createOrder(Date orderDate) {
+        Order newOrder = new Order(orderDate);
         orderList.add(newOrder);
     }
 
-    public Order getOrder(String orderID) {
+    public void createOrder(Date orderDate, CustomerInfor customerInfo) {
+        Order newOrder = new Order(orderDate, customerInfo);
+        orderList.add(newOrder);
+    }
+
+    public Order getOrder(long orderID) {
         return orderList.stream()
-                .filter(order -> order.getOrderID().equals(orderID))
+                .filter(order -> order.getOrderID() == orderID)
                 .findFirst()
                 .orElse(null);
     }
 
-    public void addItemToOrder(String orderID, String productID, int quantity) {
+    public void addItemToOrder(long orderID, long productID, int quantity) {
         Order order = getOrder(orderID);
         Product product = inventory.getProductByID(productID);
         if (order != null && product != null) {
-            order.addItem(product, quantity);
+            OrderItem item = new OrderItem(product, quantity);
+            order.addItem(item);
         }
     }
 
-    public Invoice generateInvoice(String invoiceID, Date invoiceDate, String orderID, String paymentMethod) {
+    public Invoice generateInvoice(Date invoiceDate, long orderID, String paymentMethod, Employee employee) {
         Order order = getOrder(orderID);
         if (order != null) {
-            Invoice invoice = new Invoice(invoiceID, invoiceDate, order);
+            Invoice invoice = new Invoice(invoiceDate, order, employee);
+            if (paymentMethod != null) {
+                invoice.setPaymentMethod(PaymentMethod.valueOf(paymentMethod));
+            }
             invoiceList.add(invoice);
             return invoice;
         }
@@ -153,67 +189,71 @@ public class Store {
 
     public void initializeData() {
         // Initialize Users
-        addUser(new User("U001", "admin", "admin123", UserRole.Admin));
-        addUser(new User("U002", "employee1", "emp123", UserRole.Employee));
-        addUser(new User("U003", "employee2", "emp456", UserRole.Employee));
+        addUser(new User("admin", "admin123", "Nguyễn Văn A", "0123456789", UserRole.Admin));
+        addUser(new Employee("employee1", "e123", "Nguyễn Văn An", "0123456789", UserRole.Employee, 500000));
+        addUser(new Employee("employee2", "e123", "Nguyễn Văn Anh", "0123456789", UserRole.Employee, 700000));
 
         // Initialize Books
-        addProduct(new Book("B001", "The Art of Programming", 10, 35.0, 45.0, 
+        addProduct(new Book("The Art of Programming", 10, 35.0, 45.0, 
             "Tech Publications", "Donald Knuth", "978-0201038019"));
-        addProduct(new Book("B002", "Clean Code", 15, 28.0, 39.99, 
+        addProduct(new Book("Clean Code", 15, 28.0, 39.99, 
             "Prentice Hall", "Robert Martin", "978-0132350884"));
-        addProduct(new Book("B003", "Design Patterns", 8, 40.0, 54.99, 
+        addProduct(new Book("Design Patterns", 8, 40.0, 54.99, 
             "Addison-Wesley", "Gang of Four", "978-0201633610"));
 
         // Initialize Stationary
-        addProduct(new Stationary("S001", "Premium Notebook", 50, 3.0, 5.99, 
+        addProduct(new Stationary("Premium Notebook", 50, 3.0, 5.99, 
             "Moleskine", "Notebook"));
-        addProduct(new Stationary("S002", "Gel Pen Set", 100, 1.0, 2.49, 
+        addProduct(new Stationary("Gel Pen Set", 100, 1.0, 2.49, 
             "Pilot", "Pen"));
-        addProduct(new Stationary("S003", "Color Pencils", 30, 4.0, 7.99, 
+        addProduct(new Stationary("Color Pencils", 30, 4.0, 7.99, 
             "Faber-Castell", "Pencil"));
 
         // Initialize Toys
-        addProduct(new Toy("T001", "LEGO Classic Set", 20, 15.0, 24.99, 
+        addProduct(new Toy("LEGO Classic Set", 20, 15.0, 24.99, 
             "LEGO", 5));
-        addProduct(new Toy("T002", "Rubik's Cube", 40, 5.0, 9.99, 
+        addProduct(new Toy("Rubik's Cube", 40, 5.0, 9.99, 
             "Rubik's", 8));
-        addProduct(new Toy("T003", "Chess Set", 15, 12.0, 19.99, 
+        addProduct(new Toy("Chess Set", 15, 12.0, 19.99, 
             "Classic Games", 7));
 
         // Create Customer Information
-        CustomerInfor customer1 = new CustomerInfor("C001", "John Doe", "john@email.com");
-        CustomerInfor customer2 = new CustomerInfor("C002", "Jane Smith", "jane@email.com");
+        CustomerInfor customer1 = new CustomerInfor("John Doe", "john@email.com");
+        CustomerInfor customer2 = new CustomerInfor("Jane Smith", "jane@email.com");
 
         // Create Orders and Invoices
         Date currentDate = new Date();
         
         // Order 1
-        createOrder("O001", currentDate);
-        Order order1 = getOrder("O001");
+        createOrder(currentDate);
+        Order order1 = orderList.get(orderList.size() - 1);
         order1.setCustomerInfo(customer1);
-        addItemToOrder("O001", "B001", 2);
-        addItemToOrder("O001", "S001", 3);
+        addItemToOrder(order1.getOrderID(), 1, 2);
+        addItemToOrder(order1.getOrderID(), 2, 3);
         order1.setIsPaid(true);
+
+        Employee employee1 = (Employee) getUserByUsername("employee1");
         
-        Invoice invoice1 = generateInvoice("INV001", currentDate, "O001", "CASH");
+        Invoice invoice1 = generateInvoice(currentDate, order1.getOrderID(), "CASH", employee1);
         invoice1.setPaymentMethod(PaymentMethod.CASH);
 
         // Order 2
-        createOrder("O002", currentDate);
-        Order order2 = getOrder("O002");
+        createOrder(currentDate);
+        Order order2 = orderList.get(orderList.size() - 1);
         order2.setCustomerInfo(customer2);
-        addItemToOrder("O002", "T001", 1);
-        addItemToOrder("O002", "S002", 5);
+        addItemToOrder(order2.getOrderID(), 3, 1);
+        addItemToOrder(order2.getOrderID(), 4, 5);
         order2.setIsPaid(true);
+
+        Employee employee2 = (Employee) getUserByUsername("employee2");
         
-        Invoice invoice2 = generateInvoice("INV002", currentDate, "O002", "CREDIT_CARD");
+        Invoice invoice2 = generateInvoice(currentDate, order2.getOrderID(), "CREDIT_CARD", employee2);
         invoice2.setPaymentMethod(PaymentMethod.CREDIT_CARD);
 
         // Add Expenses
-        addExpense(new Expense("E001", "Rent", 1000.0, currentDate, "Monthly store rent"));
-        addExpense(new Expense("E002", "Utilities", 200.0, currentDate, "Electricity and water"));
-        addExpense(new Expense("E003", "Supplies", 150.0, currentDate, "Office supplies"));
-        addExpense(new Expense("E004", "Marketing", 300.0, currentDate, "Online advertisements"));
+        addExpense(new Expense("Rent", 1000.0, currentDate, "Monthly store rent"));
+        addExpense(new Expense("Utilities", 200.0, currentDate, "Electricity and water"));
+        addExpense(new Expense("Supplies", 150.0, currentDate, "Office supplies"));
+        addExpense(new Expense("Marketing", 300.0, currentDate, "Online advertisements"));
     }
 }

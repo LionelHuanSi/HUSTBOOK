@@ -2,25 +2,31 @@ package com.hedspi.javalorant.order;
 
 import java.util.Date;
 
+import com.hedspi.javalorant.user.Employee;
+
 public class Invoice {
-    private String invoiceID;
+    public static long countInvoice = 0;
+    private long invoiceID;
     private Date invoiceDate;
     private Order order;
     private double totalAmount;
     private PaymentMethod paymentMethod;
+    private Employee employee;
 
-    public Invoice(String invoiceID, Date invoiceDate, Order order) {
-        this.invoiceID = invoiceID;
+    public Invoice(Date invoiceDate, Order order, Employee employee) {
+        Invoice.countInvoice++;
+        this.invoiceID = Invoice.countInvoice;
         this.invoiceDate = invoiceDate;
         this.order = order;
         this.totalAmount = order.getTotalAmount();
+        this.employee = employee;
     }
 
-    public String getInvoiceID() {
+    public long getInvoiceID() {
         return invoiceID;
     }
 
-    public void setInvoiceID(String invoiceID) {
+    public void setInvoiceID(long invoiceID) {
         this.invoiceID = invoiceID;
     }
 
@@ -57,6 +63,14 @@ public class Invoice {
         this.paymentMethod = paymentMethod;
     }
 
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
     public String generateInvoiceDetails() {
         StringBuilder details = new StringBuilder();
         details.append("Invoice ID: ").append(invoiceID).append("\n");
@@ -64,6 +78,7 @@ public class Invoice {
         details.append("Order ID: ").append(order.getOrderID()).append("\n");
         details.append("Total Amount: $").append(String.format("%.2f", totalAmount)).append("\n");
         details.append("Payment Method: ").append(paymentMethod);
+        details.append("\nEmployee: ").append(employee.getUsername()).append("\n");
         return details.toString();
     }
 }

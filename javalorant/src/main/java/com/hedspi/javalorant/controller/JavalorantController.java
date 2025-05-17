@@ -55,7 +55,7 @@ public class JavalorantController {
     }
 
     @GetMapping("/products/{id}")
-    public Product getProduct(@PathVariable String id) {
+    public Product getProduct(@PathVariable long id) {
         return store.getInventory().getProductByID(id);
     }
 
@@ -65,13 +65,13 @@ public class JavalorantController {
     }
 
     @DeleteMapping("/products/{id}")
-    public boolean removeProduct(@PathVariable String id) {
+    public boolean removeProduct(@PathVariable long id) {
         return store.removeProduct(id);
     }
 
     @PutMapping("/products/{id}/quantity")
-    public boolean updateProductQuantity(@PathVariable String id, @RequestParam int quantity) {
-        return store.getInventory().updateQuantity(id, quantity);
+    public boolean updateProductQuantity(@PathVariable long id, @RequestParam int quantity) {
+        return store.getInventory().removeProduct(id);
     }
 
     // Order Management APIs
@@ -81,20 +81,20 @@ public class JavalorantController {
     }
 
     @GetMapping("/orders/{id}")
-    public Order getOrder(@PathVariable String id) {
+    public Order getOrder(@PathVariable long id) {
         return store.getOrder(id);
     }
 
     @PostMapping("/orders")
-    public void createOrder(@RequestParam String orderId, @RequestParam(required = false) Long dateMillis) {
+    public void createOrder(@RequestParam(required = false) Long dateMillis) {
         Date orderDate = dateMillis != null ? new Date(dateMillis) : new Date();
-        store.createOrder(orderId, orderDate);
+        store.createOrder(orderDate);
     }
 
     @PostMapping("/orders/{orderId}/items")
     public void addItemToOrder(
-            @PathVariable String orderId,
-            @RequestParam String productId,
+            @PathVariable long orderId,
+            @RequestParam long productId,
             @RequestParam int quantity) {
         store.addItemToOrder(orderId, productId, quantity);
     }
@@ -107,12 +107,11 @@ public class JavalorantController {
 
     @PostMapping("/invoices")
     public Invoice generateInvoice(
-            @RequestParam String invoiceId,
-            @RequestParam String orderId,
+            @RequestParam long orderId,
             @RequestParam String paymentMethod,
             @RequestParam(required = false) Long dateMillis) {
         Date invoiceDate = dateMillis != null ? new Date(dateMillis) : new Date();
-        return store.generateInvoice(invoiceId, invoiceDate, orderId, paymentMethod);
+        return store.generateInvoice(invoiceDate, orderId, paymentMethod, null);
     }
 
     // Expense Management APIs

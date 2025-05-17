@@ -4,27 +4,27 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.hedspi.javalorant.inventory.Product;
-
 public class Order {
-    private String orderID;
+    public static long countOrder = 0;
+    private long orderID;
     private Date orderDate;
     private List<OrderItem> items;
     private double totalAmount;
     private boolean isPaid;
     private CustomerInfor customerInfo;
 
-    public Order(String orderID, Date orderDate) {
-        this.orderID = orderID;
+    public Order(Date orderDate) {
+        Order.countOrder++;
+        this.orderID = Order.countOrder;
         this.orderDate = orderDate;
         this.items = new ArrayList<>();
         this.totalAmount = 0.0;
         this.isPaid = false;
     }
 
-    public void addItem(Product product, int quantity) {
-        items.add(new OrderItem(product, quantity));
-        calculateTotal();
+    public Order(Date orderDate, CustomerInfor customerInfo) {
+        this(orderDate);
+        this.customerInfo = customerInfo;
     }
 
     public void calculateTotal() {
@@ -34,11 +34,11 @@ public class Order {
         }
     }
 
-    public String getOrderID() {
+    public long getOrderID() {
         return orderID;
     }
 
-    public void setOrderID(String orderID) {
+    public void setOrderID(long orderID) {
         this.orderID = orderID;
     }
 
@@ -54,8 +54,24 @@ public class Order {
         return items;
     }
 
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
+    public void addItem(OrderItem item) {
+        items.add(item);
+        calculateTotal();
+    }
+
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+        calculateTotal();
+    }
+
+    public void updateItem(OrderItem updateItem){
+        for (OrderItem item : items) {
+            if (item.getProduct().getProductID() == updateItem.getProduct().getProductID()) {
+                item.setQuantity(updateItem.getQuantity());
+                item.setProduct(updateItem.getProduct());
+                break;
+            }
+        }
         calculateTotal();
     }
 
