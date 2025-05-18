@@ -19,15 +19,6 @@ public class Inventory {
         return null;
     }
 
-    public Product getProductByName(String name) {
-        for (Product product : productList) {
-            if (product.getName().equalsIgnoreCase(name)) {
-                return product;
-            }
-        }
-        return null;
-    }
-
     public List<Product> getAllProducts() {
         return productList;
     }
@@ -57,7 +48,10 @@ public class Inventory {
                         stationary.setBrand(((Stationary) updatedProduct).getBrand());
                         stationary.setStationaryType(((Stationary) updatedProduct).getStationaryType());
                     }
-                    case Toy toy -> toy.setSuitableAge(((Toy) updatedProduct).getSuitableAge());
+                    case Toy toy -> {
+                        toy.setBrand(((Toy) updatedProduct).getBrand());
+                        toy.setSuitableAge(((Toy) updatedProduct).getSuitableAge());
+                    }
                     default -> {
                     }
                 }

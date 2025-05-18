@@ -1,0 +1,334 @@
+import React, { useState, useEffect } from "react";
+import "./AddOrderForm.css";
+import { addOrder, updateOrder } from "../../services/OrderService";
+import { getAllProducts } from "../../services/InventoryService";
+
+const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
+  const [orderId, setOrderId] = useState(order?.orderID || "");
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState(
+    mode === "detail" && order
+      ? {
+          orderID: order.orderID || "",
+          orderDate:
+            order.orderDate?.split("T")[0] ||
+            new Date().toISOString().split("T")[0],
+          customerInfo: {
+            name: order.customerInfo?.name || "",
+            contactInfo: order.customerInfo?.contactInfo || "",
+          },
+          items: order.items || [],
+          totalAmount: order.totalAmount || 0,
+          paid: order.paid || false,
+        }
+      : {
+          orderID: "",
+          orderDate: new Date().toISOString().split("T")[0],
+          customerInfo: {
+            name: "",
+            contactInfo: "",
+          },
+          items: [],
+          totalAmount: 0,
+          paid: false,
+        }
+  );
+
+  const [currentItem, setCurrentItem] = useState({
+    product: {
+      name: "",
+      price: 0,
+    },
+    quantity: 1,
+  });
+
+  const checkDuplicateProduct = (productName) => {
+    return formData.items.some((item) => item.product.name === productName);
+  };
+
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+        setProducts(data);
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    if (mode === "add") {
+      fetchProducts();
+    }
+  }, [mode]);
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    if (id === "name" || id === "contactInfo") {
+      setFormData((prev) => ({
+        ...prev,
+        customerInfo: {
+          ...prev.customerInfo,
+          [id]: value,
+        },
+      }));
+    } else if (id === "paid") {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value === "true",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    }
+  };
+
+  const handleAddItem = () => {
+    if (currentItem.product.name) {
+      if (checkDuplicateProduct(currentItem.product.name)) {
+        setError(new Error("Sản phẩm này đã có trong đơn hàng"));
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        items: [...prev.items, { ...currentItem }],
+        totalAmount:
+          prev.totalAmount + currentItem.product.price * currentItem.quantity,
+      }));
+      setCurrentItem({
+        product: { name: "", price: 0 },
+        quantity: 1,
+      });
+      setError(null); // Clear error when successfully added
+    }
+  };
+
+  const handleRemoveItem = (index) => {
+    setFormData((prev) => {
+      const removedItem = prev.items[index];
+      return {
+        ...prev,
+        items: prev.items.filter((_, i) => i !== index),
+        totalAmount:
+          prev.totalAmount - removedItem.product.price * removedItem.quantity,
+      };
+    });
+  };
+
+  const handleQuantityChange = (index, newQuantity) => {
+    setFormData((prev) => {
+      const updatedItems = [...prev.items];
+      const item = updatedItems[index];
+
+      // Tính toán lại tổng tiền
+      const oldTotal = prev.totalAmount;
+      const oldItemTotal = item.product.price * item.quantity;
+      const newItemTotal = item.product.price * newQuantity;
+
+      // Cập nhật số lượng mới
+      item.quantity = Number(newQuantity);
+
+      return {
+        ...prev,
+        items: updatedItems,
+        totalAmount: oldTotal - oldItemTotal + newItemTotal,
+      };
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (mode === "detail") {
+        await updateOrder(orderId, formData);
+      } else {
+        await addOrder(formData);
+      }
+      onClose();
+    } catch (error) {
+      setError(error);
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="add-order-form">
+        <div className="form-header">
+          <h2>{mode === "add" ? "Thêm đơn hàng mới" : "Chi tiết đơn hàng"}</h2>
+          <div onClick={onClose}>Đóng</div>
+        </div>
+
+        {error && (
+          <div
+            className="error-message"
+            style={{
+              color: "#dc3545",
+              padding: "10px",
+              marginBottom: "10px",
+              backgroundColor: "#f8d7da",
+              borderRadius: "4px",
+              textAlign: "center",
+            }}
+          >
+            {error.message || "Có lỗi xảy ra"}
+          </div>
+        )}
+
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <div className="form-column">
+            <div className="form-group">
+              <label htmlFor="orderDate">Ngày đặt:</label>
+              <input
+                type="date"
+                id="orderDate"
+                value={formData.orderDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="customer-info">
+              <h3>Thông tin khách hàng</h3>
+              <div className="form-group">
+                <label htmlFor="name">Tên khách hàng:</label>
+                <input
+                  type="text"
+                  id="name"
+                  value={formData.customerInfo.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="contactInfo">Thông tin liên hệ:</label>
+                <input
+                  type="text"
+                  id="contactInfo"
+                  value={formData.customerInfo.contactInfo}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="payment-info">
+              <div className="form-group">
+                <label htmlFor="paid">Trạng thái thanh toán:</label>
+                <select
+                  id="paid"
+                  value={formData.paid}
+                  onChange={handleInputChange}
+                >
+                  <option value={false}>Chưa thanh toán</option>
+                  <option value={true}>Đã thanh toán</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="totalAmount">Tổng tiền:</label>
+                <input
+                  type="number"
+                  id="totalAmount"
+                  value={formData.totalAmount}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="order-items">
+              <h3 className="order-items-label">Chi tiết đơn hàng</h3>
+              <div className="add-item-section">
+                <select
+                  value={currentItem.product.name}
+                  onChange={(e) => {
+                    const selectedProduct = products.find(
+                      (p) => p.name === e.target.value
+                    );
+                    setCurrentItem((prev) => ({
+                      ...prev,
+                      product: selectedProduct || { name: "", price: 0 },
+                    }));
+                  }}
+                >
+                  <option value="">Chọn sản phẩm</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.name}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  value={currentItem.quantity}
+                  onChange={(e) =>
+                    setCurrentItem((prev) => ({
+                      ...prev,
+                      quantity: e.target.value,
+                    }))
+                  }
+                />
+                <button type="button" onClick={handleAddItem}>
+                  Thêm
+                </button>
+              </div>
+
+              <table className="items-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formData.items.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.product.name}</td>
+                      <td>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleQuantityChange(index, e.target.value)
+                          }
+                          style={{
+                            width: "60px",
+                            padding: "4px",
+                            border: "1px solid #ddd",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(index)}
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </form>
+
+        <button type="submit" className="btn-submit" onClick={handleSubmit}>
+          {mode === "add" ? "Thêm đơn hàng" : "Cập nhật"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default AddOrderForm;

@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterOrderDTO;
+import com.hedspi.javalorant.dto.OrderDTO;
 import com.hedspi.javalorant.dto.ProductDTO;
+import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
@@ -64,11 +67,6 @@ public class JavalorantController {
     @GetMapping("/products")
     public List<Product> getAllProducts() {
         return store.getInventory().getAllProducts();
-    }
-
-    @GetMapping("/products/{id}")
-    public Product getProduct(@PathVariable long id) {
-        return store.getInventory().getProductByID(id);
     }
 
     @PostMapping("/products/filter")
@@ -206,30 +204,71 @@ public class JavalorantController {
 
 
 
+
+
+
+
+
+
+
+
     // Order Management APIs
     @GetMapping("/orders")
     public List<Order> getAllOrders() {
+        System.out.println("OrderList: " + store.getOrderList().toString());
         return store.getOrderList();
     }
 
-    @GetMapping("/orders/{id}")
-    public Order getOrder(@PathVariable long id) {
-        return store.getOrder(id);
-    }
-
     @PostMapping("/orders")
-    public void createOrder(@RequestParam(required = false) Long dateMillis) {
-        Date orderDate = dateMillis != null ? new Date(dateMillis) : new Date();
-        store.createOrder(orderDate);
+    public ResponseEntity<?> addOrder(@RequestBody OrderDTO orderDTO) {
+        try {
+            System.out.println("Received orderDTO: " + orderDTO.toString());
+            Order order = new Order(
+                new Date(Long.parseLong(orderDTO.getOrderDate())),
+                orderDTO.getItems(),
+                orderDTO.getTotalAmount(),
+                orderDTO.isPaid(),
+                orderDTO.getCustomerInfo()
+            );
+            store.addOrder(order);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Lỗi khi thêm đơn hàng: " + e.getMessage());
+        }
+        
     }
 
-    @PostMapping("/orders/{orderId}/items")
-    public void addItemToOrder(
-            @PathVariable long orderId,
-            @RequestParam long productId,
-            @RequestParam int quantity) {
-        store.addItemToOrder(orderId, productId, quantity);
+    @PostMapping("/orders/filter")
+    public List<Order> filterOrders(@RequestBody FilterOrderDTO filterDTO) {
+        System.out.println("Received filterDTO: " + filterDTO.toString());
+        return store.filterOrders(filterDTO, store.getOrderList());
     }
+
+    @PostMapping("/orders/sort")
+    public List<Order> sortOrders(@RequestBody SortOrderDTO sortDTO) {
+        System.out.println("Received sortDTO: " + sortDTO.toString());
+        return store.sortOrders(store.getOrderList(), sortDTO);
+    }
+
+    @DeleteMapping("/orders/{id}")
+    public boolean removeOrder(@PathVariable long id) {
+        return store.removeOrder(id);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Invoice Management APIs
     @GetMapping("/invoices")
@@ -245,6 +284,16 @@ public class JavalorantController {
         Date invoiceDate = dateMillis != null ? new Date(dateMillis) : new Date();
         return store.generateInvoice(invoiceDate, orderId, paymentMethod, null);
     }
+
+
+
+
+
+
+
+
+
+
 
     // Expense Management APIs
     @GetMapping("/expenses")

@@ -27,6 +27,15 @@ public class Order {
         this.customerInfo = customerInfo;
     }
 
+    public Order(Date orderDate, List<OrderItem> items, double totalAmount, boolean isPaid,
+            CustomerInfor customerInfo) {
+        this.orderDate = orderDate;
+        this.items = items;
+        this.totalAmount = totalAmount;
+        this.isPaid = isPaid;
+        this.customerInfo = customerInfo;
+    }
+
     public void calculateTotal() {
         totalAmount = 0.0;
         for (OrderItem item : items) {

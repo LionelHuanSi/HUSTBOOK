@@ -1,10 +1,13 @@
 package com.hedspi.javalorant.store;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterOrderDTO;
+import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
@@ -38,6 +41,13 @@ public class Store {
         this.expenseList = new ArrayList<>();
         this.userList = new ArrayList<>();
     }
+    public String getStoreName() {
+        return storeName;
+    }
+
+
+
+
 
 
 
@@ -83,6 +93,8 @@ public class Store {
 
 
 
+
+
     /////////////// Inventory Management //////////////
     public void addProduct(Product product) {
         inventory.addProduct(product);
@@ -98,10 +110,6 @@ public class Store {
 
     public Inventory getInventory() {
         return inventory;
-    }
-
-    public Product getProductByName(String name) {
-        return inventory.getProductByName(name);
     }
 
     public List<Product> filterProducts(FilterDTO filterDTO, List<Product> productList) {
@@ -143,6 +151,10 @@ public class Store {
 
 
 
+    
+
+
+
 
 
     //////////////// Order Management //////////////
@@ -154,6 +166,10 @@ public class Store {
     public void createOrder(Date orderDate, CustomerInfor customerInfo) {
         Order newOrder = new Order(orderDate, customerInfo);
         orderList.add(newOrder);
+    }
+
+    public void addOrder(Order order) {
+        orderList.add(order);
     }
 
     public boolean removeOrder(long orderID) {
@@ -190,6 +206,111 @@ public class Store {
         }
     }
 
+    public List<Order> filterOrders(FilterOrderDTO filterDTO, List<Order> orderList) {
+        List<Order> filteredOrders = new ArrayList<>(orderList);
+
+        if (filterDTO.getCustomerName() != null && !filterDTO.getCustomerName().isEmpty()) {
+            filteredOrders = filteredOrders.stream()
+                .filter(order -> order.getCustomerInfo().getName()
+                    .toLowerCase().contains(filterDTO.getCustomerName().toLowerCase()))
+                .toList();
+        }
+
+        if (filterDTO.getStartDate() != null && !filterDTO.getStartDate().isEmpty()) {
+            LocalDate startDate = LocalDate.parse(filterDTO.getStartDate());
+            filteredOrders = filteredOrders.stream()
+                .filter(order -> order.getOrderDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate().isAfter(startDate))
+                .toList();
+        }
+
+        if (filterDTO.getEndDate() != null && !filterDTO.getEndDate().isEmpty()) {
+            LocalDate endDate = LocalDate.parse(filterDTO.getEndDate());
+            filteredOrders = filteredOrders.stream()
+                .filter(order -> order.getOrderDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate().isBefore(endDate))
+                .toList();
+        }
+
+        if (filterDTO.getIsPaid() != null) {
+            filteredOrders = filteredOrders.stream()
+                .filter(order -> order.isPaid() == filterDTO.getIsPaid())
+                .toList();
+        }
+
+        if (filterDTO.getProductName() != null && !filterDTO.getProductName().isEmpty()) {
+            filteredOrders = filteredOrders.stream()
+                .filter(order -> order.getItems().stream()
+                    .anyMatch(item -> item.getProduct().getName()
+                        .toLowerCase().contains(filterDTO.getProductName().toLowerCase())))
+                .toList();
+        }
+
+        return filteredOrders;
+    }
+
+    public List<Order> sortOrders(List<Order> orderList, SortOrderDTO sortDTO) {
+        if (sortDTO.getOrderIDList() != null && !sortDTO.getOrderIDList().isEmpty()) {
+            orderList = orderList.stream()
+                .filter(order -> sortDTO.getOrderIDList().contains(order.getOrderID()))
+                .toList();
+        }
+
+        if (sortDTO.getField() != null && !sortDTO.getField().isEmpty()) {
+            switch (sortDTO.getField()) {
+                case "orderID" -> {
+                    return orderList.stream()
+                        .sorted((o1, o2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Long.compare(o1.getOrderID(), o2.getOrderID());
+                            } else {
+                                return Long.compare(o2.getOrderID(), o1.getOrderID());
+                            }
+                        })
+                        .toList();
+                }
+                case "orderDate" -> {
+                    return orderList.stream()
+                        .sorted((o1, o2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return o1.getOrderDate().compareTo(o2.getOrderDate());
+                            } else {
+                                return o2.getOrderDate().compareTo(o1.getOrderDate());
+                            }
+                        })
+                        .toList();
+                }
+                case "totalAmount" -> {
+                    return orderList.stream()
+                        .sorted((o1, o2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Double.compare(o1.getTotalAmount(), o2.getTotalAmount());
+                            } else {
+                                return Double.compare(o2.getTotalAmount(), o1.getTotalAmount());
+                            }
+                        })
+                        .toList();
+                }
+                default -> {
+                    return orderList;
+                }
+            }
+        }
+        return orderList;
+    }
+
+
+
+
+
+
+
+
+    //////////////// Invoice Management //////////////
+    public List<Invoice> getInvoiceList() {
+        return invoiceList;
+    }
+
     public Invoice generateInvoice(Date invoiceDate, long orderID, String paymentMethod, Employee employee) {
         Order order = getOrder(orderID);
         if (order != null) {
@@ -201,6 +322,20 @@ public class Store {
             return invoice;
         }
         return null;
+    }
+
+
+
+
+
+
+
+
+
+
+    ///////////////// Expense Management //////////////
+    public List<Expense> getExpenseList() {
+        return expenseList;
     }
 
     public void addExpense(Expense expense) {
@@ -246,17 +381,19 @@ public class Store {
         return revenue - expenses - cogs;
     }
 
-    public String getStoreName() {
-        return storeName;
-    }
 
-    public List<Invoice> getInvoiceList() {
-        return invoiceList;
-    }
 
-    public List<Expense> getExpenseList() {
-        return expenseList;
-    }
+
+
+
+
+
+
+
+
+
+
+    
 
     
 
@@ -265,38 +402,53 @@ public class Store {
         addUser(new User("admin", "admin123", "Nguyễn Văn A", "0123456789", UserRole.Admin));
         addUser(new Employee("employee1", "e123", "Nguyễn Văn An", "0123456789", UserRole.Employee, 500000));
         addUser(new Employee("employee2", "e123", "Nguyễn Văn Anh", "0123456789", UserRole.Employee, 700000));
+        addUser(new Employee("employee3", "e123", "Trần Thị Bình", "0987654321", UserRole.Employee, 600000));
+        addUser(new Employee("employee4", "e123", "Lê Văn Cường", "0369852147", UserRole.Employee, 550000));
+        addUser(new Employee("employee5", "e123", "Phạm Thị Dung", "0741852963", UserRole.Employee, 650000));
 
         // Initialize Books
-        addProduct(new Book("The Art of Programming", 10, 35.0, 45.0, 
-            "Tech Publications", "Donald Knuth", "978-0201038019"));
-        addProduct(new Book("Clean Code", 15, 28.0, 39.99, 
-            "Prentice Hall", "Robert Martin", "978-0132350884"));
-        addProduct(new Book("Design Patterns", 8, 40.0, 54.99, 
-            "Addison-Wesley", "Gang of Four", "978-0201633610"));
+        addProduct(new Book("The Art of Programming", 10, 35.0, 45.0, "Tech Publications", "Donald Knuth", "978-0201038019"));
+        addProduct(new Book("Clean Code", 15, 28.0, 39.99, "Prentice Hall", "Robert Martin", "978-0132350884"));
+        addProduct(new Book("Design Patterns", 8, 40.0, 54.99, "Addison-Wesley", "Gang of Four", "978-0201633610"));
+        addProduct(new Book("Java Programming", 20, 30.0, 42.99, "O'Reilly", "James Gosling", "978-0596009205"));
+        addProduct(new Book("Python Basics", 25, 25.0, 34.99, "No Starch Press", "Al Sweigart", "978-1593279288"));
+        addProduct(new Book("Data Structures", 12, 45.0, 59.99, "Pearson", "Robert Sedgewick", "978-0321573513"));
+        addProduct(new Book("Machine Learning", 10, 50.0, 69.99, "MIT Press", "Tom Mitchell", "978-0070428072"));
+        addProduct(new Book("Web Development", 18, 35.0, 49.99, "Wiley", "Jennifer Robbins", "978-1118907443"));
 
         // Initialize Stationary
-        addProduct(new Stationary("Premium Notebook", 50, 3.0, 5.99, 
-            "Moleskine", "Notebook"));
-        addProduct(new Stationary("Gel Pen Set", 100, 1.0, 2.49, 
-            "Pilot", "Pen"));
-        addProduct(new Stationary("Color Pencils", 30, 4.0, 7.99, 
-            "Faber-Castell", "Pencil"));
+        addProduct(new Stationary("Premium Notebook", 50, 3.0, 5.99, "Moleskine", "Notebook"));
+        addProduct(new Stationary("Gel Pen Set", 100, 1.0, 2.49, "Pilot", "Pen"));
+        addProduct(new Stationary("Color Pencils", 30, 4.0, 7.99, "Faber-Castell", "Pencil"));
+        addProduct(new Stationary("Highlighter Pack", 80, 2.0, 4.99, "Stabilo", "Highlighter"));
+        addProduct(new Stationary("Sticky Notes", 120, 1.5, 3.49, "Post-it", "Notes"));
+        addProduct(new Stationary("Ruler Set", 40, 2.5, 5.49, "Westcott", "Ruler"));
+        addProduct(new Stationary("Eraser Pack", 150, 0.5, 1.99, "Pentel", "Eraser"));
+        addProduct(new Stationary("Scissors", 35, 3.5, 6.99, "Fiskars", "Scissors"));
 
         // Initialize Toys
-        addProduct(new Toy("LEGO Classic Set", 20, 15.0, 24.99, 
-            "LEGO", 5));
-        addProduct(new Toy("Rubik's Cube", 40, 5.0, 9.99, 
-            "Rubik's", 8));
-        addProduct(new Toy("Chess Set", 15, 12.0, 19.99, 
-            "Classic Games", 7));
+        addProduct(new Toy("LEGO Classic Set", 20, 15.0, 24.99, "LEGO", 5));
+        addProduct(new Toy("Rubik's Cube", 40, 5.0, 9.99, "Rubik's", 8));
+        addProduct(new Toy("Chess Set", 15, 12.0, 19.99, "Classic Games", 7));
+        addProduct(new Toy("Remote Control Car", 10, 25.0, 39.99, "Hot Wheels", 6));
+        addProduct(new Toy("Monopoly Board", 25, 18.0, 29.99, "Hasbro", 8));
+        addProduct(new Toy("Barbie Doll", 30, 15.0, 24.99, "Mattel", 4));
+        addProduct(new Toy("Building Blocks", 35, 20.0, 34.99, "Mega Bloks", 3));
+        addProduct(new Toy("Science Kit", 15, 30.0, 49.99, "National Geographic", 10));
 
         // Create Customer Information
         CustomerInfor customer1 = new CustomerInfor("John Doe", "john@email.com");
         CustomerInfor customer2 = new CustomerInfor("Jane Smith", "jane@email.com");
+        CustomerInfor customer3 = new CustomerInfor("David Wilson", "david@email.com");
+        CustomerInfor customer4 = new CustomerInfor("Sarah Brown", "sarah@email.com");
+        CustomerInfor customer5 = new CustomerInfor("Michael Johnson", "michael@email.com");
 
         // Create Orders and Invoices
         Date currentDate = new Date();
-        
+        Employee employee1 = (Employee) getUserByUsername("employee1");
+        Employee employee2 = (Employee) getUserByUsername("employee2");
+        Employee employee3 = (Employee) getUserByUsername("employee3");
+
         // Order 1
         createOrder(currentDate);
         Order order1 = orderList.get(orderList.size() - 1);
@@ -304,11 +456,7 @@ public class Store {
         addItemToOrder(order1.getOrderID(), 1, 2);
         addItemToOrder(order1.getOrderID(), 2, 3);
         order1.setIsPaid(true);
-
-        Employee employee1 = (Employee) getUserByUsername("employee1");
-        
-        Invoice invoice1 = generateInvoice(currentDate, order1.getOrderID(), "CASH", employee1);
-        invoice1.setPaymentMethod(PaymentMethod.CASH);
+        generateInvoice(currentDate, order1.getOrderID(), "CASH", employee1);
 
         // Order 2
         createOrder(currentDate);
@@ -317,16 +465,144 @@ public class Store {
         addItemToOrder(order2.getOrderID(), 3, 1);
         addItemToOrder(order2.getOrderID(), 4, 5);
         order2.setIsPaid(true);
+        generateInvoice(currentDate, order2.getOrderID(), "CREDIT_CARD", employee2);
 
-        Employee employee2 = (Employee) getUserByUsername("employee2");
-        
-        Invoice invoice2 = generateInvoice(currentDate, order2.getOrderID(), "CREDIT_CARD", employee2);
-        invoice2.setPaymentMethod(PaymentMethod.CREDIT_CARD);
+        // Order 3
+        createOrder(currentDate);
+        Order order3 = orderList.get(orderList.size() - 1);
+        order3.setCustomerInfo(customer3);
+        addItemToOrder(order3.getOrderID(), 5, 2);
+        addItemToOrder(order3.getOrderID(), 6, 1);
+        addItemToOrder(order3.getOrderID(), 7, 3);
+        order3.setIsPaid(true);
+        generateInvoice(currentDate, order3.getOrderID(), "BANK_TRANSFER", employee3);
+
+        // Order 4
+        createOrder(currentDate);
+        Order order4 = orderList.get(orderList.size() - 1);
+        order4.setCustomerInfo(customer4);
+        addItemToOrder(order4.getOrderID(), 8, 4);
+        addItemToOrder(order4.getOrderID(), 9, 2);
+        order4.setIsPaid(true);
+        generateInvoice(currentDate, order4.getOrderID(), "CASH", employee1);
+
+        // Order 5
+        createOrder(currentDate);
+        Order order5 = orderList.get(orderList.size() - 1);
+        order5.setCustomerInfo(customer5);
+        addItemToOrder(order5.getOrderID(), 10, 1);
+        addItemToOrder(order5.getOrderID(), 11, 3);
+        addItemToOrder(order5.getOrderID(), 12, 2);
+        order5.setIsPaid(true);
+        generateInvoice(currentDate, order5.getOrderID(), "CREDIT_CARD", employee2);
+
+        // Additional orders with diverse data in 2025
+        CustomerInfor customer6 = new CustomerInfor("Emily Chen", "emily@email.com");
+        CustomerInfor customer7 = new CustomerInfor("Robert Taylor", "robert@email.com");
+        CustomerInfor customer8 = new CustomerInfor("Maria Garcia", "maria@email.com");
+        CustomerInfor customer9 = new CustomerInfor("James Wilson", "james@email.com");
+        CustomerInfor customer10 = new CustomerInfor("Lisa Wong", "lisa@email.com");
+
+        Employee employee4 = (Employee) getUserByUsername("employee4");
+        Employee employee5 = (Employee) getUserByUsername("employee5");
+
+        // Order 6 - March 15, 2025
+        Date date6 = new Date(1742265600000L); // 2025-03-15
+        createOrder(date6, customer6);
+        Order order6 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order6.getOrderID(), 13, 2);
+        addItemToOrder(order6.getOrderID(), 14, 1);
+        order6.setIsPaid(true);
+        generateInvoice(date6, order6.getOrderID(), "CASH", employee4);
+
+        // Order 7 - May 22, 2025
+        Date date7 = new Date(1748059200000L); // 2025-05-22
+        createOrder(date7, customer7);
+        Order order7 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order7.getOrderID(), 15, 3);
+        addItemToOrder(order7.getOrderID(), 16, 2);
+        addItemToOrder(order7.getOrderID(), 17, 1);
+        order7.setIsPaid(false);
+
+        // Order 8 - July 4, 2025
+        Date date8 = new Date(1751846400000L); // 2025-07-04
+        createOrder(date8, customer8);
+        Order order8 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order8.getOrderID(), 18, 4);
+        addItemToOrder(order8.getOrderID(), 19, 2);
+        order8.setIsPaid(true);
+        generateInvoice(date8, order8.getOrderID(), "BANK_TRANSFER", employee5);
+
+        // Order 9 - August 30, 2025
+        Date date9 = new Date(1756684800000L); // 2025-08-30
+        createOrder(date9, customer9);
+        Order order9 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order9.getOrderID(), 20, 1);
+        addItemToOrder(order9.getOrderID(), 21, 5);
+        order9.setIsPaid(true);
+        generateInvoice(date9, order9.getOrderID(), "CREDIT_CARD", employee4);
+
+        // Order 10 - October 15, 2025
+        Date date10 = new Date(1760563200000L); // 2025-10-15
+        createOrder(date10, customer10);
+        Order order10 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order10.getOrderID(), 22, 3);
+        addItemToOrder(order10.getOrderID(), 23, 2);
+        order10.setIsPaid(false);
+
+        // Order 11 - November 1, 2025
+        Date date11 = new Date(1762032000000L); // 2025-11-01
+        createOrder(date11, customer6);
+        Order order11 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order11.getOrderID(), 1, 3);
+        addItemToOrder(order11.getOrderID(), 5, 2);
+        order11.setIsPaid(true);
+        generateInvoice(date11, order11.getOrderID(), "CASH", employee5);
+
+        // Order 12 - December 24, 2025
+        Date date12 = new Date(1766620800000L); // 2025-12-24
+        createOrder(date12, customer7);
+        Order order12 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order12.getOrderID(), 8, 4);
+        addItemToOrder(order12.getOrderID(), 12, 1);
+        order12.setIsPaid(true);
+        generateInvoice(date12, order12.getOrderID(), "CREDIT_CARD", employee4);
+
+        // Order 13 - February 14, 2025
+        Date date13 = new Date(1739520000000L); // 2025-02-14
+        createOrder(date13, customer8);
+        Order order13 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order13.getOrderID(), 16, 2);
+        addItemToOrder(order13.getOrderID(), 20, 3);
+        order13.setIsPaid(false);
+
+        // Order 14 - April 1, 2025
+        Date date14 = new Date(1743475200000L); // 2025-04-01
+        createOrder(date14, customer9);
+        Order order14 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order14.getOrderID(), 3, 2);
+        addItemToOrder(order14.getOrderID(), 7, 1);
+        order14.setIsPaid(true);
+        generateInvoice(date14, order14.getOrderID(), "BANK_TRANSFER", employee5);
+
+        // Order 15 - June 30, 2025
+        Date date15 = new Date(1751155200000L); // 2025-06-30
+        createOrder(date15, customer10);
+        Order order15 = orderList.get(orderList.size() - 1);
+        addItemToOrder(order15.getOrderID(), 10, 3);
+        addItemToOrder(order15.getOrderID(), 15, 2);
+        addItemToOrder(order15.getOrderID(), 18, 1);
+        order15.setIsPaid(true);
+        generateInvoice(date15, order15.getOrderID(), "CASH", employee4);
 
         // Add Expenses
         addExpense(new Expense("Rent", 1000.0, currentDate, "Monthly store rent"));
         addExpense(new Expense("Utilities", 200.0, currentDate, "Electricity and water"));
         addExpense(new Expense("Supplies", 150.0, currentDate, "Office supplies"));
         addExpense(new Expense("Marketing", 300.0, currentDate, "Online advertisements"));
+        addExpense(new Expense("Insurance", 250.0, currentDate, "Store insurance"));
+        addExpense(new Expense("Maintenance", 180.0, currentDate, "Store maintenance"));
+        addExpense(new Expense("Internet", 100.0, currentDate, "Internet service"));
+        addExpense(new Expense("Employee Training", 400.0, currentDate, "Staff development"));
     }
 }

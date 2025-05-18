@@ -85,6 +85,18 @@
   font-size: 1rem;
 }
 
+.filter-payment-status {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.filter-payment-status:focus {
+  outline: none;
+  border-color: #7380ec;
+}
+
 .order-filters .btn-view-all,
 .order-filters .btn-filter {
   padding: 0.4rem 1rem;
@@ -109,6 +121,22 @@
   opacity: 0.85;
 }
 
+.date-range {
+  display: flex;
+  gap: 1rem;
+}
+
+.date-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-input label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
 .order-table {
   width: 100%;
   border-collapse: collapse;
@@ -129,6 +157,8 @@
   background: var(--clr-light);
   color: var(--clr-dark);
   font-weight: 600;
+  position: relative;
+  padding-right: 25px;
 }
 
 .order-table tr:last-child td {
@@ -164,6 +194,20 @@
 .order-table .btn-edit:hover,
 .order-table .btn-delete:hover {
   opacity: 0.85;
+}
+
+.btn-sort-up,
+.btn-sort-down {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  cursor: pointer;
+  color: #666;
+}
+
+.btn-sort-up:hover,
+.btn-sort-down:hover {
+  color: #000;
 }
 
 /* Responsive */
