@@ -120,4 +120,21 @@ public class ProductDTO {
     public void setSuitableAge(int suitableAge) {
         this.suitableAge = suitableAge;
     }
+
+    @Override
+    public String toString() {
+        return "ProductDTO{" +
+                "name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", purchasePrice=" + purchasePrice +
+                ", sellingPrice=" + sellingPrice +
+                ", productType='" + productType + '\'' +
+                ", publisher='" + publisher + '\'' +
+                ", author='" + author + '\'' +
+                ", ISBN='" + ISBN + '\'' +
+                ", brand='" + brand + '\'' +
+                ", stationaryType='" + stationaryType + '\'' +
+                ", suitableAge=" + suitableAge +
+                '}';
+    }
 }

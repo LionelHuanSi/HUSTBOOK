@@ -71,4 +71,15 @@ public abstract class Product {
     }
 
     public abstract String getProductType();
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productID=" + productID +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", purchasePrice=" + purchasePrice +
+                ", sellingPrice=" + sellingPrice +
+                '}';
+    }
 }

@@ -31,4 +31,16 @@ public class Stationary extends Product {
     public String getProductType() {
         return "Stationary";
     }
+    @Override
+    public String toString() {
+        return "Stationary{" +
+                "productID=" + getProductID() +
+                ", name='" + getName() + '\'' +
+                ", quantity=" + getQuantity() +
+                ", purchasePrice=" + getPurchasePrice() +
+                ", sellingPrice=" + getSellingPrice() +
+                ", brand='" + brand + '\'' +
+                ", stationaryType='" + stationaryType + '\'' +
+                '}';
+    }
 }

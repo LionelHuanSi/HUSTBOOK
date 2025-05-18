@@ -31,4 +31,17 @@ public class Toy extends Product {
     public String getProductType() {
         return "Toy";
     }
+
+    @Override
+    public String toString() {
+        return "Toy{" +
+                "productID=" + getProductID() +
+                ", name='" + getName() + '\'' +
+                ", quantity=" + getQuantity() +
+                ", purchasePrice=" + getPurchasePrice() +
+                ", sellingPrice=" + getSellingPrice() +
+                ", brand='" + brand + '\'' +
+                ", suitableAge=" + suitableAge +
+                '}';
+    }
 }

@@ -20,12 +20,15 @@ const Inventory = () => {
   });
   const [error, setError] = useState(null);
   const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [formMode, setFormMode] = useState("add"); // 'add' or 'detail'
 
   useEffect(() => {
     const fetchInventory = async () => {
       try {
         const response = await getAllProducts();
         setInventory(response);
+        console.log("Inventory data:", response);
       } catch (error) {
         setError(error);
       }
@@ -35,11 +38,20 @@ const Inventory = () => {
   }, [isAddButtonClicked]);
 
   const handleAddButtonClick = () => {
+    setFormMode("add");
+    setSelectedProduct(null);
+    setIsAddButtonClicked(true);
+  };
+
+  const handleDetailButtonClick = (product) => {
+    setFormMode("detail");
+    setSelectedProduct(product);
     setIsAddButtonClicked(true);
   };
 
   const handleCloseAddProductForm = () => {
     setIsAddButtonClicked(false);
+    setSelectedProduct(null);
   };
 
   const hanleGetAllProducts = async () => {
@@ -131,7 +143,11 @@ const Inventory = () => {
             </button>
           </div>
           {isAddButtonClicked && (
-            <AddProductForm onClose={handleCloseAddProductForm} />
+            <AddProductForm
+              onClose={handleCloseAddProductForm}
+              mode={formMode}
+              product={selectedProduct}
+            />
           )}
           <div className="inventory-filters">
             <button className="btn-view-all" onClick={hanleGetAllProducts}>
@@ -276,7 +292,12 @@ const Inventory = () => {
                     <td>{product.sellingPrice}</td>
                     <td>{product.quantity}</td>
                     <td>
-                      <button className="btn-edit">Sửa</button>
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleDetailButtonClick(product)}
+                      >
+                        Chi tiết
+                      </button>
                       <button
                         className="btn-delete"
                         onClick={() => handleDeleteProduct(product.productID)}

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -144,9 +143,60 @@ public class JavalorantController {
         return store.removeProduct(id);
     }
 
-    @PutMapping("/products/{id}/quantity")
-    public boolean updateProductQuantity(@PathVariable long id, @RequestParam int quantity) {
-        return store.getInventory().removeProduct(id);
+    @PostMapping("/products/{id}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable long id,
+            @RequestBody ProductDTO productDTO) {
+        try {
+            System.out.println("Received productDTO: " + productDTO.toString());
+            Product product;
+            switch (productDTO.getProductType().toLowerCase()) {
+                case "book" -> {
+                    product = new Book(
+                        productDTO.getName(),      
+                        productDTO.getQuantity(),     
+                        productDTO.getPurchasePrice(),
+                        productDTO.getSellingPrice(), 
+                        productDTO.getPublisher(),    
+                        productDTO.getAuthor(),       
+                        productDTO.getISBN()          
+                    );
+                    product.setProductID(id);
+                }
+                case "stationary" -> {
+                    product = new Stationary(
+                        productDTO.getName(),      
+                        productDTO.getQuantity(),     
+                        productDTO.getPurchasePrice(),
+                        productDTO.getSellingPrice(), 
+                        productDTO.getBrand(),        
+                        productDTO.getStationaryType() 
+                    );
+                    product.setProductID(id);
+                }
+                case "toy" -> {
+                    product = new Toy(
+                        productDTO.getName(),      
+                        productDTO.getQuantity(),     
+                        productDTO.getPurchasePrice(),
+                        productDTO.getSellingPrice(), 
+                        productDTO.getBrand(),        
+                        productDTO.getSuitableAge()       
+                    );
+                    product.setProductID(id);
+                }
+                default -> {
+                    return ResponseEntity.badRequest()
+                        .body("Loại sản phẩm không hợp lệ: " + productDTO.getProductType());
+                }
+            }
+            System.out.println("Product: " + product.toString());
+            store.updateProduct(product);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Lỗi khi cập nhật sản phẩm: " + e.getMessage());
+        }
     }
 
 

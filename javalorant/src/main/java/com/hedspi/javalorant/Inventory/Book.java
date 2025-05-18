@@ -41,4 +41,18 @@ public class Book extends Product {
     public String getProductType() {
         return "Book";
     }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "productID=" + getProductID() +
+                ", name='" + getName() + '\'' +
+                ", quantity=" + getQuantity() +
+                ", purchasePrice=" + getPurchasePrice() +
+                ", sellingPrice=" + getSellingPrice() +
+                ", publisher='" + publisher + '\'' +
+                ", author='" + author + '\'' +
+                ", ISBN='" + ISBN + '\'' +
+                '}';
+    }
 }

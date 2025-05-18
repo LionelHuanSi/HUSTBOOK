@@ -34,7 +34,7 @@ export const addProduct = async (product) => {
 
 export const updateProduct = async (productId, product) => {
     try {
-        const response = await axios.put(`${API_URL}/${productId}`, product);
+        const response = await axios.post(`${API_URL}/${productId}`, product);
         return response.data;
     } catch (error) {
         console.error('Error updating product:', error);

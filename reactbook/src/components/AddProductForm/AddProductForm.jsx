@@ -1,47 +1,70 @@
 import React from "react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import "./AddProductForm.css";
-import { addProduct } from "../../services/InventoryService";
+import { addProduct, updateProduct } from "../../services/InventoryService";
 
-const AddProductForm = ({ onClose }) => {
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    productType: "",
-    purchasePrice: null,
-    sellingPrice: null,
-    quantity: null,
-    publisher: "",
-    author: "",
-    ISBN: null,
-    brand: "",
-    stationaryType: "",
-    suitableAge: null,
-  });
+const AddProductForm = ({ onClose, mode = "add", product = null }) => {
+  const [productId, setProductId] = useState(product?.productID || undefined);
+  const [formData, setFormData] = useState(
+    mode === "detail" && product
+      ? {
+          name: product.name,
+          productType: product.productType,
+          quantity: product.quantity,
+          purchasePrice: product.purchasePrice,
+          sellingPrice: product.sellingPrice,
+          author: product.author || null,
+          publisher: product.publisher || null,
+          isbn: product.isbn || null,
+          brand: product.brand || null,
+          stationaryType: product.stationaryType || null,
+          suitableAge: product.suitableAge || null,
+        }
+      : {
+          name: "",
+          productType: "",
+          quantity: "",
+          purchasePrice: "",
+          sellingPrice: "",
+          author: null,
+          publisher: null,
+          isbn: null,
+          brand: null,
+          stationaryType: null,
+          suitableAge: null,
+        }
+  );
   const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setNewProduct((prevProduct) => ({
-      ...prevProduct,
+    setFormData((prevData) => ({
+      ...prevData,
       [id]: value,
     }));
   };
 
-  const handleAddProduct = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError(null);
     if (
-      !newProduct.name ||
-      !newProduct.productType ||
-      !newProduct.purchasePrice ||
-      !newProduct.sellingPrice ||
-      !newProduct.quantity
+      !formData.name ||
+      !formData.productType ||
+      !formData.purchasePrice ||
+      !formData.sellingPrice ||
+      !formData.quantity
     ) {
       setError({ message: "Vui lòng điền đầy đủ thông tin sản phẩm." });
       return;
     }
     try {
-      console.log("Sending product data:", newProduct);
-      await addProduct(newProduct);
+      if (mode === "detail" && productId) {
+        console.log("Updating product data:", formData);
+        await updateProduct(productId, formData);
+      } else {
+        console.log("Adding product data:", formData);
+        await addProduct(formData);
+      }
       onClose();
     } catch (error) {
       console.error("Error response:", error.response?.data);
@@ -53,18 +76,18 @@ const AddProductForm = ({ onClose }) => {
     <div className="modal-overlay">
       <div className="add-product-form">
         <div className="form-header">
-          <h2>Thêm sản phẩm mới</h2>
+          <h2>{mode === "add" ? "Thêm sản phẩm mới" : "Chi tiết sản phẩm"}</h2>
           <div onClick={onClose}>Đóng</div>
         </div>
-        <form className="form-grid">
+        <form className="form-grid" onSubmit={handleSubmit}>
           <div className="form-column">
             <div className="form-group">
-              <label htmlFor="productName">Tên sản phẩm:</label>
+              <label htmlFor="name">Tên sản phẩm:</label>
               <input
                 type="text"
                 id="name"
                 placeholder="Nhập tên sản phẩm"
-                value={newProduct.name}
+                value={formData.name}
                 onChange={handleInputChange}
                 required
               />
@@ -76,7 +99,7 @@ const AddProductForm = ({ onClose }) => {
                 id="purchasePrice"
                 placeholder="Nhập giá mua"
                 min="0"
-                value={newProduct.purchasePrice}
+                value={formData.purchasePrice}
                 onChange={handleInputChange}
                 required
               />
@@ -90,7 +113,7 @@ const AddProductForm = ({ onClose }) => {
                 id="sellingPrice"
                 placeholder="Nhập giá bán"
                 min="0"
-                value={newProduct.sellingPrice}
+                value={formData.sellingPrice}
                 onChange={handleInputChange}
                 required
               />
@@ -102,7 +125,7 @@ const AddProductForm = ({ onClose }) => {
                 id="quantity"
                 placeholder="Nhập số lượng"
                 min="0"
-                value={newProduct.quantity}
+                value={formData.quantity}
                 onChange={handleInputChange}
                 required
               />
@@ -111,17 +134,17 @@ const AddProductForm = ({ onClose }) => {
               <label htmlFor="productType">Thể loại:</label>
               <select
                 id="productType"
-                value={newProduct.productType}
+                value={formData.productType}
                 required
                 onChange={handleInputChange}
               >
                 <option value="">Chọn thể loại</option>
-                <option value="book">Sách</option>
-                <option value="stationary">Văn phòng phẩm</option>
-                <option value="toy">Đồ chơi</option>
+                <option value="Book">Sách</option>
+                <option value="Stationary">Văn phòng phẩm</option>
+                <option value="Toy">Đồ chơi</option>
               </select>
             </div>
-            {newProduct.productType === "book" && (
+            {formData.productType === "Book" && (
               <>
                 <div className="form-group">
                   <label htmlFor="publisher">Nhà xuất bản:</label>
@@ -129,7 +152,7 @@ const AddProductForm = ({ onClose }) => {
                     type="text"
                     id="publisher"
                     placeholder="Nhập nhà xuất bản"
-                    value={newProduct.publisher}
+                    value={formData.publisher}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -139,7 +162,7 @@ const AddProductForm = ({ onClose }) => {
                     type="text"
                     id="author"
                     placeholder="Nhập tác giả"
-                    value={newProduct.author}
+                    value={formData.author}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -147,15 +170,15 @@ const AddProductForm = ({ onClose }) => {
                   <label htmlFor="ISBN">ISBN:</label>
                   <input
                     type="text"
-                    id="ISBN"
-                    placeholder="Nhập ISBN"
-                    value={newProduct.ISBN}
+                    id="isbn"
+                    placeholder="Nhập mã isbn"
+                    value={formData.isbn}
                     onChange={handleInputChange}
                   />
                 </div>
               </>
             )}
-            {newProduct.productType === "stationary" && (
+            {formData.productType === "Stationary" && (
               <>
                 <div className="form-group">
                   <label htmlFor="brand">Thương hiệu:</label>
@@ -163,23 +186,23 @@ const AddProductForm = ({ onClose }) => {
                     type="text"
                     id="brand"
                     placeholder="Nhập thương hiệu"
-                    value={newProduct.brand}
+                    value={formData.brand}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="stationaryType">Loại văn phòng phẩm:</label>
+                  <label htmlFor="stationarytype">Loại văn phòng phẩm:</label>
                   <input
                     type="text"
-                    id="stationaryType"
+                    id="stationarytype"
                     placeholder="Nhập loại văn phòng phẩm"
-                    value={newProduct.stationaryType}
+                    value={formData.stationaryType}
                     onChange={handleInputChange}
                   />
                 </div>
               </>
             )}
-            {newProduct.productType === "toy" && (
+            {formData.productType === "Toy" && (
               <>
                 <div className="form-group">
                   <label htmlFor="brand">Thương hiệu:</label>
@@ -187,17 +210,17 @@ const AddProductForm = ({ onClose }) => {
                     type="text"
                     id="brand"
                     placeholder="Nhập thương hiệu"
-                    value={newProduct.brand}
+                    value={formData.brand}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="suitableAge">Tuổi sử dụng:</label>
+                  <label htmlFor="suitableAge">Độ tuổi phù hợp:</label>
                   <input
                     type="text"
                     id="suitableAge"
-                    placeholder="Nhập tuổi sử dụng"
-                    value={newProduct.suitableAge}
+                    placeholder="Nhập độ tuổi phù hợp"
+                    value={formData.suitableAge}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -210,8 +233,8 @@ const AddProductForm = ({ onClose }) => {
             {error.message || "Có lỗi xảy ra"}
           </div>
         )}
-        <button className="btn-save" onClick={handleAddProduct}>
-          Lưu
+        <button type="submit" className="btn-submit" onClick={handleSubmit}>
+          {mode === "add" ? "Thêm sản phẩm" : "Cập nhật"}
         </button>
       </div>
     </div>

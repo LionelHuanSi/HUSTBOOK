@@ -78,3 +78,30 @@
 .btn-save:hover {
   background: #45a049;
 }
+
+.btn-submit {
+  background-color: #2ecc71;
+  color: white;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  width: fit-content;
+  align-self: center;
+  box-shadow: 0 2px 4px rgba(46, 204, 113, 0.2);
+}
+
+.btn-submit:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+}
+
+.btn-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(46, 204, 113, 0.2);
+}
