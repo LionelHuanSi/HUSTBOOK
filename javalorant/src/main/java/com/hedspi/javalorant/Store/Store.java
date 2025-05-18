@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
 import com.hedspi.javalorant.inventory.Inventory;
@@ -102,6 +104,41 @@ public class Store {
         return inventory.getProductByName(name);
     }
 
+    public List<Product> filterProducts(FilterDTO filterDTO, List<Product> productList) {
+        if (filterDTO.getCategory() != null && !filterDTO.getCategory().isEmpty()) {
+            productList = inventory.filterProductsByCategory(filterDTO.getCategory(), productList);
+        }
+        if (filterDTO.getName() != null && !filterDTO.getName().isEmpty()) {
+            productList = inventory.filterProductsByName(filterDTO.getName(), productList);
+        }
+        if (filterDTO.getPurchasePriceFrom() > 0) {
+            productList = inventory.filterProductsByPurchasePrice(filterDTO.getPurchasePriceFrom(), filterDTO.getPurchasePriceTo(), productList);
+        }
+        if (filterDTO.getSellingPriceFrom() > 0) {
+            productList = inventory.filterProductsBySellingPrice(filterDTO.getSellingPriceFrom(), filterDTO.getSellingPriceTo(), productList);
+        }
+        return productList;
+    }
+
+    public List<Product> sortProducts(List<Product> productList, SortProductsDTO sortDTO) {
+        if (sortDTO.getProductIDList() != null && !sortDTO.getProductIDList().isEmpty()) {
+            productList = productList.stream()
+                    .filter(product -> sortDTO.getProductIDList().contains(product.getProductID()))
+                    .toList();
+        }
+        if (sortDTO.getField() != null && !sortDTO.getField().isEmpty()) {
+            switch (sortDTO.getField()) {
+                case "productID" -> productList = inventory.sortProductsByID(productList, sortDTO.getType());
+                case "purchasePrice" -> productList =  inventory.sortProductsByPurchasePrice(productList, sortDTO.getType());
+                case "sellingPrice" -> productList =  inventory.sortProductsBySellingPrice(productList, sortDTO.getType());
+                case "quantity" -> productList = inventory.sortProductsByQuantity(productList, sortDTO.getType());
+                default -> {
+                    return productList;
+                }
+            }
+        }
+        return productList;
+    }
 
 
 

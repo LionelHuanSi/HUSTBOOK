@@ -5,15 +5,21 @@ import "./Inventory.css";
 import "../../styles/base.css";
 import { getAllProducts } from "../../services/InventoryService";
 import { deleteProduct } from "../../services/InventoryService";
+import { getProductsByFilter } from "../../services/InventoryService";
+import { getSortedProducts } from "../../services/InventoryService";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
+  const [filterData, setFilterData] = useState({
+    category: "",
+    name: "",
+    purchasePriceFrom: null,
+    purchasePriceTo: null,
+    sellingPriceFrom: null,
+    sellingPriceTo: null,
+  });
   const [error, setError] = useState(null);
   const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceFrom, setPriceFrom] = useState("");
-  const [priceTo, setPriceTo] = useState("");
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -39,6 +45,42 @@ const Inventory = () => {
   const hanleGetAllProducts = async () => {
     try {
       const response = await getAllProducts();
+      setInventory(response);
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilterData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleFilterSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      console.log("Filter data:", filterData);
+      const response = await getProductsByFilter(filterData);
+      setInventory(response);
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  const handleSort = async (field, type) => {
+    const ids = inventory.map((product) => product.productID);
+    const newSortData = {
+      field: field,
+      type: type,
+      productIDList: ids,
+    };
+    try {
+      console.log("Sort data:", newSortData);
+      const response = await getSortedProducts(newSortData);
+      console.log("Sorted response:", response);
       setInventory(response);
     } catch (error) {
       setError(error);
@@ -97,49 +139,129 @@ const Inventory = () => {
             </button>
             <select
               className="filter-category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={filterData.category}
+              onChange={handleFilterChange}
+              name="category"
             >
               <option value="">Tất cả thể loại</option>
-              <option value="sach-giao-khoa">Sách</option>
-              <option value="tieu-thuyet">Văn phòng phẩm</option>
-              <option value="truyen-tranh">Đồ chơi</option>
+              <option value="Book">Sách</option>
+              <option value="Stationary">Văn phòng phẩm</option>
+              <option value="Toy">Đồ chơi</option>
             </select>
             <input
               type="text"
               className="filter-name"
               placeholder="Tìm theo tên sản phẩm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={filterData.name}
+              onChange={handleFilterChange}
+              name="name"
             />
             <input
               type="number"
-              className="filter-price-buy"
+              className="filter-price-buy-from"
               placeholder="Giá mua từ"
               min="0"
-              value={priceFrom}
-              onChange={(e) => setPriceFrom(e.target.value)}
+              value={filterData.purchasePriceFrom}
+              onChange={handleFilterChange}
+              name="purchasePriceFrom"
             />
             <input
               type="number"
-              className="filter-price-sell"
+              className="filter-price-buy-to"
+              placeholder="Giá mua đến"
+              min="0"
+              value={filterData.purchasePriceTo}
+              onChange={handleFilterChange}
+              name="purchasePriceTo"
+            />
+            <input
+              type="number"
+              className="filter-price-sell-from"
               placeholder="Giá bán từ"
               min="0"
-              value={priceTo}
-              onChange={(e) => setPriceTo(e.target.value)}
+              value={filterData.sellingPriceFrom}
+              onChange={handleFilterChange}
+              name="sellingPriceFrom"
             />
-            <button className="btn-filter">Lọc</button>
+            <input
+              type="number"
+              className="filter-price-sell-to"
+              placeholder="Giá bán đến"
+              min="0"
+              value={filterData.sellingPriceTo}
+              onChange={handleFilterChange}
+              name="sellingPriceTo"
+            />
+            <button className="btn-filter" onClick={handleFilterSubmit}>
+              Lọc
+            </button>
           </div>
 
           <table className="inventory-table">
             <thead>
               <tr>
-                <th>Mã SP</th>
+                <th>
+                  Mã SP
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("productID", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("productID", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
                 <th>Tên sản phẩm</th>
                 <th>Thể loại</th>
-                <th>Giá mua</th>
-                <th>Giá bán</th>
-                <th>Số lượng</th>
+                <th>
+                  Giá mua
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("purchasePrice", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("purchasePrice", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
+                <th>
+                  Giá bán
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("sellingPrice", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("sellingPrice", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
+                <th>
+                  Số lượng
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("quantity", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("quantity", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
                 <th>Hành động</th>
               </tr>
             </thead>

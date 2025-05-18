@@ -12,6 +12,16 @@ export const getAllProducts = async () => {
     }
 }
 
+export const getProductsByFilter = async (filter) => {
+    try {
+        const response = await axios.post(`${API_URL}/filter`, filter);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching products by filter:', error);
+        throw error;
+    }
+}
+
 export const addProduct = async (product) => {
     try {
         const response = await axios.post(API_URL, product);
@@ -38,6 +48,16 @@ export const deleteProduct = async (productId) => {
         return response.data;
     } catch (error) {
         console.error('Error deleting product:', error);
+        throw error;
+    }
+}
+
+export const getSortedProducts = async (sortData) => {
+    try {
+        const response = await axios.post(`${API_URL}/sort`, sortData);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching sorted products:', error);
         throw error;
     }
 }

@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hedspi.javalorant.dto.FilterDTO;
 import com.hedspi.javalorant.dto.ProductDTO;
+import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
 import com.hedspi.javalorant.inventory.Product;
@@ -53,6 +55,12 @@ public class JavalorantController {
         store.addUser(user);
     }
 
+
+
+
+
+
+
     // Inventory Management APIs
     @GetMapping("/products")
     public List<Product> getAllProducts() {
@@ -62,6 +70,18 @@ public class JavalorantController {
     @GetMapping("/products/{id}")
     public Product getProduct(@PathVariable long id) {
         return store.getInventory().getProductByID(id);
+    }
+
+    @PostMapping("/products/filter")
+    public List<Product> filterProducts(@RequestBody FilterDTO filterDTO) {
+        System.out.println("Received filterDTO: " + filterDTO.toString());
+        return store.filterProducts(filterDTO, store.getInventory().getAllProducts());
+    }
+
+    @PostMapping("/products/sort")
+    public List<Product> sortProducts(@RequestBody SortProductsDTO sortDTO) {
+        System.out.println("Received filterDTO: " + sortDTO.toString());
+        return store.sortProducts(store.getInventory().getAllProducts(), sortDTO);
     }
 
     @PostMapping("/products")
@@ -128,6 +148,13 @@ public class JavalorantController {
     public boolean updateProductQuantity(@PathVariable long id, @RequestParam int quantity) {
         return store.getInventory().removeProduct(id);
     }
+
+
+
+
+
+
+
 
     // Order Management APIs
     @GetMapping("/orders")
