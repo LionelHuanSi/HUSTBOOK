@@ -22,7 +22,6 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
           paid: order.paid || false,
         }
       : {
-          orderID: "",
           orderDate: new Date().toISOString().split("T")[0],
           customerInfo: {
             name: "",
@@ -37,7 +36,7 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
   const [currentItem, setCurrentItem] = useState({
     product: {
       name: "",
-      price: 0,
+      sellingPrice: 0,
     },
     quantity: 1,
   });
@@ -89,18 +88,23 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
 
   const handleAddItem = () => {
     if (currentItem.product.name) {
+      console.log("Current item:", currentItem);
       if (checkDuplicateProduct(currentItem.product.name)) {
         setError(new Error("Sản phẩm này đã có trong đơn hàng"));
         return;
       }
       setFormData((prev) => ({
         ...prev,
-        items: [...prev.items, { ...currentItem }],
+        items: [
+          ...prev.items,
+          { ...currentItem, quantity: Number(currentItem.quantity) },
+        ],
         totalAmount:
-          prev.totalAmount + currentItem.product.price * currentItem.quantity,
+          prev.totalAmount +
+          currentItem.product.sellingPrice * currentItem.quantity,
       }));
       setCurrentItem({
-        product: { name: "", price: 0 },
+        product: { name: "", sellingPrice: 0 },
         quantity: 1,
       });
       setError(null); // Clear error when successfully added
@@ -114,28 +118,26 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
         ...prev,
         items: prev.items.filter((_, i) => i !== index),
         totalAmount:
-          prev.totalAmount - removedItem.product.price * removedItem.quantity,
+          prev.totalAmount -
+          removedItem.product.sellingPrice * removedItem.quantity,
       };
     });
   };
 
   const handleQuantityChange = (index, newQuantity) => {
+    console.log("New quantity:", newQuantity);
+    console.log("Index:", index);
     setFormData((prev) => {
-      const updatedItems = [...prev.items];
-      const item = updatedItems[index];
-
-      // Tính toán lại tổng tiền
-      const oldTotal = prev.totalAmount;
-      const oldItemTotal = item.product.price * item.quantity;
-      const newItemTotal = item.product.price * newQuantity;
-
-      // Cập nhật số lượng mới
-      item.quantity = Number(newQuantity);
-
+      const updatedItems = prev.items.map((item, i) =>
+        i === index ? { ...item, quantity: Number(newQuantity) } : item
+      );
       return {
         ...prev,
         items: updatedItems,
-        totalAmount: oldTotal - oldItemTotal + newItemTotal,
+        totalAmount: updatedItems.reduce(
+          (sum, item) => sum + item.product.sellingPrice * item.quantity,
+          0
+        ),
       };
     });
   };
@@ -144,8 +146,10 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
     e.preventDefault();
     try {
       if (mode === "detail") {
+        console.log("Updating order with ID: ", orderId);
         await updateOrder(orderId, formData);
       } else {
+        console.log("Adding new order: ", formData);
         await addOrder(formData);
       }
       onClose();
@@ -231,9 +235,9 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
               <div className="form-group">
                 <label htmlFor="totalAmount">Tổng tiền:</label>
                 <input
-                  type="number"
+                  type="text"
                   id="totalAmount"
-                  value={formData.totalAmount}
+                  value={formData.totalAmount.toLocaleString("vi-VN")}
                   readOnly
                 />
               </div>
@@ -250,15 +254,24 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                     const selectedProduct = products.find(
                       (p) => p.name === e.target.value
                     );
-                    setCurrentItem((prev) => ({
-                      ...prev,
-                      product: selectedProduct || { name: "", price: 0 },
-                    }));
+                    if (selectedProduct) {
+                      const { productType, ...productWithoutType } =
+                        selectedProduct;
+                      setCurrentItem((prev) => ({
+                        ...prev,
+                        product: productWithoutType,
+                      }));
+                    } else {
+                      setCurrentItem((prev) => ({
+                        ...prev,
+                        product: { name: "", sellingPrice: 0 },
+                      }));
+                    }
                   }}
                 >
                   <option value="">Chọn sản phẩm</option>
                   {products.map((product) => (
-                    <option key={product.id} value={product.name}>
+                    <option key={product.productID} value={product.name}>
                       {product.name}
                     </option>
                   ))}
@@ -270,7 +283,7 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                   onChange={(e) =>
                     setCurrentItem((prev) => ({
                       ...prev,
-                      quantity: e.target.value,
+                      quantity: Number(e.target.value) || 1,
                     }))
                   }
                 />

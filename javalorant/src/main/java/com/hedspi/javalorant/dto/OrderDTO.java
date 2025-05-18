@@ -1,26 +1,27 @@
 package com.hedspi.javalorant.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hedspi.javalorant.order.CustomerInfor;
-import com.hedspi.javalorant.order.OrderItem;
+
 
 public class OrderDTO {
     private String orderDate;
-    private List<OrderItem> items;
+    private List<Map<String, Object>> items;
     private double totalAmount;
-    private boolean isPaid;
+    private boolean paid;
     private CustomerInfor customerInfo;
 
     public OrderDTO() {
     }
 
-    public OrderDTO(String orderDate, List<OrderItem> items, double totalAmount, boolean isPaid,
+    public OrderDTO(String orderDate, List<Map<String, Object>> items, double totalAmount, boolean paid,
             CustomerInfor customerInfo) {
         this.orderDate = orderDate;
         this.items = items;
         this.totalAmount = totalAmount;
-        this.isPaid = isPaid;
+        this.paid = paid;
         this.customerInfo = customerInfo;
     }
 
@@ -32,11 +33,11 @@ public class OrderDTO {
         this.orderDate = orderDate;
     }
 
-    public List<OrderItem> getItems() {
+    public List<Map<String, Object>> getItems() {
         return items;
     }
 
-    public void setItems(List<OrderItem> items) {
+    public void setItems(List<Map<String, Object>> items) {
         this.items = items;
     }
 
@@ -48,12 +49,12 @@ public class OrderDTO {
         this.totalAmount = totalAmount;
     }
 
-    public boolean isPaid() {
-        return isPaid;
+    public boolean getPaid() {
+        return paid;
     }
 
-    public void setPaid(boolean isPaid) {
-        this.isPaid = isPaid;
+    public void setPaid(boolean paid) {
+        this.paid = paid;
     }
 
     public CustomerInfor getCustomerInfo() {
@@ -70,7 +71,7 @@ public class OrderDTO {
                 "orderDate='" + orderDate + '\'' +
                 ", items=" + items +
                 ", totalAmount=" + totalAmount +
-                ", isPaid=" + isPaid +
+                ", paid=" + paid +
                 ", customerInfo=" + customerInfo +
                 '}';
     }

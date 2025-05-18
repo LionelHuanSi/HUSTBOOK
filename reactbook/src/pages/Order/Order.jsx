@@ -34,7 +34,7 @@ const Order = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [isAddFormOpen]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
