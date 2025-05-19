@@ -1,19 +1,7 @@
-.inventory-management {
-  background: var(--clr-white);
-  border-radius: var(--border-radius-2);
-  box-shadow: var(--box-shadow);
-  padding: 2rem;
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  min-height: 92vh;
-}
-
+/* Xóa bỏ các style không liên quan */
+.inventory-management,
 .inventory-actions {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  display: none;
 }
 
 .order-management {
@@ -179,7 +167,6 @@
   cursor: pointer;
   margin-right: 0.3rem;
   transition: background 0.2s;
-  margin-bottom: 3px;
 }
 
 .order-table .btn-edit {
@@ -197,18 +184,30 @@
   opacity: 0.85;
 }
 
-.btn-sort-up,
-.btn-sort-down {
+.order-table .btn-sort-up,
+.order-table .btn-sort-down {
   background: none;
   border: none;
-  padding: 0 2px;
   cursor: pointer;
-  color: #666;
+  font-size: 12px;
+  margin-left: 5px;
+  color: #333;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.btn-sort-up:hover,
-.btn-sort-down:hover {
-  color: #000;
+.order-table .btn-sort-up {
+  right: 18px;
+}
+
+.order-table .btn-sort-down {
+  right: 2px;
+}
+
+.order-table .btn-sort-up:hover,
+.order-table .btn-sort-down:hover {
+  color: #007bff;
 }
 
 /* Responsive */
