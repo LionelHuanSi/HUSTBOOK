@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterInvoiceDTO;
 import com.hedspi.javalorant.dto.FilterOrderDTO;
 import com.hedspi.javalorant.dto.OrderDTO;
 import com.hedspi.javalorant.dto.ProductDTO;
+import com.hedspi.javalorant.dto.SortInvoiceDTO;
 import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
@@ -44,6 +46,21 @@ public class JavalorantController {
     public JavalorantController() {
         store.initializeData();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // User Management APIs
     @GetMapping("/users")
@@ -74,25 +91,21 @@ public class JavalorantController {
     public List<Product> getAllProducts() {
         return store.getInventory().getAllProducts();
     }
-
     @PostMapping("/products/filter")
     public List<Product> filterProducts(@RequestBody FilterDTO filterDTO) {
         System.out.println("Received filterDTO: " + filterDTO.toString());
         return store.filterProducts(filterDTO, store.getInventory().getAllProducts());
     }
-
     @PostMapping("/products/sort")
     public List<Product> sortProducts(@RequestBody SortProductsDTO sortDTO) {
         System.out.println("Received filterDTO: " + sortDTO.toString());
         return store.sortProducts(store.getInventory().getAllProducts(), sortDTO);
     }
-
     @PostMapping("/products")
     public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO) {
         try {
             System.out.println("Received productDTO: " + productDTO.toString());
             Product product;
-            
             // In ra để debug
             System.out.println("ProductType: " + productDTO.getProductType());
             System.out.println("Name: " + productDTO.getName());
@@ -141,12 +154,10 @@ public class JavalorantController {
                 .body("Lỗi khi thêm sản phẩm: " + e.getMessage());
         }
     }
-
     @DeleteMapping("/products/{id}")
     public boolean removeProduct(@PathVariable long id) {
         return store.removeProduct(id);
     }
-
     @PostMapping("/products/{id}")
     public ResponseEntity<?> updateProduct(
             @PathVariable long id,
@@ -224,28 +235,23 @@ public class JavalorantController {
         System.out.println("OrderList: " + store.getOrderList().toString());
         return store.getOrderList();
     }
-
     @PostMapping("/orders/filter")
     public List<Order> filterOrders(@RequestBody FilterOrderDTO filterDTO) {
         System.out.println("Received filterDTO: " + filterDTO.toString());
         return store.filterOrders(filterDTO, store.getOrderList());
     }
-
     @PostMapping("/orders/sort")
     public List<Order> sortOrders(@RequestBody SortOrderDTO sortDTO) {
         System.out.println("Received sortDTO: " + sortDTO.toString());
         return store.sortOrders(store.getOrderList(), sortDTO);
     }
-
     @PostMapping("/orders")
     public ResponseEntity<?> addOrder(@RequestBody OrderDTO orderDTO) {
         try {
             System.out.println("Received orderDTO: " + orderDTO.toString());
-
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             Date orderDate = dateFormat.parse(orderDTO.getOrderDate());
-
             @SuppressWarnings("unchecked")
             List<OrderItem> orderItems = orderDTO.getItems().stream()
             .map(item -> {
@@ -254,7 +260,6 @@ public class JavalorantController {
                 return new OrderItem(product, ((Integer) item.get("quantity")));
             })
             .collect(Collectors.toList());
-
             Order order = new Order(
                 orderDate,
                 orderItems,
@@ -269,19 +274,15 @@ public class JavalorantController {
         }
         
     }
-
-
     @PostMapping("/orders/{id}")
     public ResponseEntity<?> updateOrder(
             @PathVariable long id,
             @RequestBody OrderDTO orderDTO) {
         try {
             System.out.println("Received orderDTO: " + orderDTO.toString());
-
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             Date orderDate = dateFormat.parse(orderDTO.getOrderDate());
-
             @SuppressWarnings("unchecked")
             List<OrderItem> orderItems = orderDTO.getItems().stream()
             .map(item -> {
@@ -290,7 +291,6 @@ public class JavalorantController {
                 return new OrderItem(product, ((Integer) item.get("quantity")));
             })
             .collect(Collectors.toList());
-
             Order order = new Order(
                 orderDate,
                 orderItems,
@@ -304,9 +304,6 @@ public class JavalorantController {
             return ResponseEntity.badRequest().body("Lỗi khi phân tích ngày: " + e.getMessage());
         }
     }
-
-    
-
     @DeleteMapping("/orders/{id}")
     public boolean removeOrder(@PathVariable long id) {
         return store.removeOrder(id);
@@ -330,6 +327,18 @@ public class JavalorantController {
     @GetMapping("/invoices")
     public List<Invoice> getAllInvoices() {
         return store.getInvoiceList();
+    }
+
+    @PostMapping("/invoices/sort")
+    public List<Invoice> sortInvoices(@RequestBody SortInvoiceDTO sortDTO) {
+        System.out.println("Received sortDTO: " + sortDTO.toString());
+        return store.sortInvoices(store.getInvoiceList(), sortDTO);
+    }
+
+    @PostMapping("/invoices/filter")
+    public List<Invoice> filterInvoices(@RequestBody FilterInvoiceDTO filterDTO) {
+        System.out.println("Received filterDTO: " + filterDTO.toString());
+        return store.filterInvoices(filterDTO, store.getInvoiceList());
     }
 
     @PostMapping("/invoices")

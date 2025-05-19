@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.List;
 
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterInvoiceDTO;
 import com.hedspi.javalorant.dto.FilterOrderDTO;
+import com.hedspi.javalorant.dto.SortInvoiceDTO;
 import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
@@ -325,6 +327,100 @@ public class Store {
             return invoice;
         }
         return null;
+    }
+
+    public List<Invoice> sortInvoices(List<Invoice> invoiceList, SortInvoiceDTO sortDTO) {
+        if (sortDTO.getInvoiceIDList() != null && !sortDTO.getInvoiceIDList().isEmpty()) {
+            invoiceList = invoiceList.stream()
+                .filter(invoice -> sortDTO.getInvoiceIDList().contains(invoice.getInvoiceID()))
+                .toList();
+        }
+
+        if (sortDTO.getField() != null && !sortDTO.getField().isEmpty()) {
+            switch (sortDTO.getField()) {
+                case "invoiceId" -> {
+                    return invoiceList.stream()
+                        .sorted((i1, i2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Long.compare(i1.getInvoiceID(), i2.getInvoiceID());
+                            } else {
+                                return Long.compare(i2.getInvoiceID(), i1.getInvoiceID());
+                            }
+                        })
+                        .toList();
+                }
+                case "date" -> {
+                    return invoiceList.stream()
+                        .sorted((i1, i2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return i1.getInvoiceDate().compareTo(i2.getInvoiceDate());
+                            } else {
+                                return i2.getInvoiceDate().compareTo(i1.getInvoiceDate());
+                            }
+                        })
+                        .toList();
+                }
+                case "total" -> {
+                    return invoiceList.stream()
+                        .sorted((i1, i2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Double.compare(i1.getTotalAmount(), i2.getTotalAmount());
+                            } else {
+                                return Double.compare(i2.getTotalAmount(), i1.getTotalAmount());
+                            }
+                        })
+                        .toList();
+                }
+                default -> {
+                    return invoiceList;
+                }
+            }
+        }
+        return invoiceList;
+    }
+
+    public List<Invoice> filterInvoices(FilterInvoiceDTO filterDTO, List<Invoice> invoiceList) {
+        List<Invoice> filteredInvoices = new ArrayList<>(invoiceList);
+
+        if (filterDTO.getCustomerName() != null && !filterDTO.getCustomerName().isEmpty()) {
+            filteredInvoices = filteredInvoices.stream()
+                .filter(invoice -> invoice.getOrder().getCustomerInfo().getName()
+                    .toLowerCase().contains(filterDTO.getCustomerName().toLowerCase()))
+                .toList();
+        }
+
+        if (filterDTO.getEmployeeName() != null && !filterDTO.getEmployeeName().isEmpty()) {
+            filteredInvoices = filteredInvoices.stream()
+                .filter(invoice -> invoice.getEmployee().getFullName()
+                    .toLowerCase().contains(filterDTO.getEmployeeName().toLowerCase()))
+                .toList();
+        }
+
+        if (filterDTO.getStartDate() != null && !filterDTO.getStartDate().isEmpty()) {
+            LocalDate startDate = LocalDate.parse(filterDTO.getStartDate());
+            filteredInvoices = filteredInvoices.stream()
+                .filter(invoice -> invoice.getInvoiceDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                    .isAfter(startDate))
+                .toList();
+        }
+
+        if (filterDTO.getEndDate() != null && !filterDTO.getEndDate().isEmpty()) {
+            LocalDate endDate = LocalDate.parse(filterDTO.getEndDate());
+            filteredInvoices = filteredInvoices.stream()
+                .filter(invoice -> invoice.getInvoiceDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                    .isBefore(endDate))
+                .toList();
+        }
+
+        if (filterDTO.getPaymentMethod() != null && !filterDTO.getPaymentMethod().isEmpty()) {
+            filteredInvoices = filteredInvoices.stream()
+                .filter(invoice -> invoice.getPaymentMethod().toString().equals(filterDTO.getPaymentMethod()))
+                .toList();
+        }
+
+        return filteredInvoices;
     }
 
 
