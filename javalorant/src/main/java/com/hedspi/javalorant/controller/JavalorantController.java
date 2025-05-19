@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -224,12 +225,25 @@ public class JavalorantController {
         return store.getOrderList();
     }
 
+    @PostMapping("/orders/filter")
+    public List<Order> filterOrders(@RequestBody FilterOrderDTO filterDTO) {
+        System.out.println("Received filterDTO: " + filterDTO.toString());
+        return store.filterOrders(filterDTO, store.getOrderList());
+    }
+
+    @PostMapping("/orders/sort")
+    public List<Order> sortOrders(@RequestBody SortOrderDTO sortDTO) {
+        System.out.println("Received sortDTO: " + sortDTO.toString());
+        return store.sortOrders(store.getOrderList(), sortDTO);
+    }
+
     @PostMapping("/orders")
     public ResponseEntity<?> addOrder(@RequestBody OrderDTO orderDTO) {
         try {
             System.out.println("Received orderDTO: " + orderDTO.toString());
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             Date orderDate = dateFormat.parse(orderDTO.getOrderDate());
 
             @SuppressWarnings("unchecked")
@@ -256,17 +270,42 @@ public class JavalorantController {
         
     }
 
-    @PostMapping("/orders/filter")
-    public List<Order> filterOrders(@RequestBody FilterOrderDTO filterDTO) {
-        System.out.println("Received filterDTO: " + filterDTO.toString());
-        return store.filterOrders(filterDTO, store.getOrderList());
+
+    @PostMapping("/orders/{id}")
+    public ResponseEntity<?> updateOrder(
+            @PathVariable long id,
+            @RequestBody OrderDTO orderDTO) {
+        try {
+            System.out.println("Received orderDTO: " + orderDTO.toString());
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date orderDate = dateFormat.parse(orderDTO.getOrderDate());
+
+            @SuppressWarnings("unchecked")
+            List<OrderItem> orderItems = orderDTO.getItems().stream()
+            .map(item -> {
+                Map<String, Object> productMap = (Map<String, Object>) item.get("product");
+                Product product = store.getInventory().getProductByID(((Integer) productMap.get("productID")).longValue());
+                return new OrderItem(product, ((Integer) item.get("quantity")));
+            })
+            .collect(Collectors.toList());
+
+            Order order = new Order(
+                orderDate,
+                orderItems,
+                orderDTO.getTotalAmount(),
+                orderDTO.getPaid(),
+                orderDTO.getCustomerInfo()
+            );
+            store.updateOrder(id, order);
+            return ResponseEntity.ok().build();
+        } catch (ParseException e) {
+            return ResponseEntity.badRequest().body("Lỗi khi phân tích ngày: " + e.getMessage());
+        }
     }
 
-    @PostMapping("/orders/sort")
-    public List<Order> sortOrders(@RequestBody SortOrderDTO sortDTO) {
-        System.out.println("Received sortDTO: " + sortDTO.toString());
-        return store.sortOrders(store.getOrderList(), sortDTO);
-    }
+    
 
     @DeleteMapping("/orders/{id}")
     public boolean removeOrder(@PathVariable long id) {

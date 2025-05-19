@@ -29,7 +29,7 @@ public class Order {
 
     public Order(Date orderDate, List<OrderItem> items, double totalAmount, boolean isPaid,
             CustomerInfor customerInfo) {
-        this.orderDate = orderDate;
+        this(orderDate);
         this.items = items;
         this.totalAmount = totalAmount;
         this.isPaid = isPaid;
@@ -61,6 +61,11 @@ public class Order {
 
     public List<OrderItem> getItems() {
         return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+        calculateTotal();
     }
 
     public void addItem(OrderItem item) {

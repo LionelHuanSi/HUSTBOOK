@@ -176,10 +176,13 @@ public class Store {
         return orderList.removeIf(order -> order.getOrderID() == orderID);
     }
 
-    public void updateOrder(Order order) {
+    public void updateOrder(long id, Order order) {
         for (Order existingOrder : orderList) {
-            if (existingOrder.getOrderID() == order.getOrderID()) {
+            if (existingOrder.getOrderID() == id) {
                 existingOrder.setCustomerInfo(order.getCustomerInfo());
+                existingOrder.setOrderDate(order.getOrderDate());
+                existingOrder.setTotalAmount(order.getTotalAmount());
+                existingOrder.setItems(order.getItems());
                 existingOrder.setIsPaid(order.isPaid());
                 break;
             }

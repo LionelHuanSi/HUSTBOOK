@@ -4,12 +4,10 @@ import { addOrder, updateOrder } from "../../services/OrderService";
 import { getAllProducts } from "../../services/InventoryService";
 
 const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
-  const [orderId, setOrderId] = useState(order?.orderID || "");
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState(
     mode === "detail" && order
       ? {
-          orderID: order.orderID || "",
           orderDate:
             order.orderDate?.split("T")[0] ||
             new Date().toISOString().split("T")[0],
@@ -146,8 +144,9 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
     e.preventDefault();
     try {
       if (mode === "detail") {
-        console.log("Updating order with ID: ", orderId);
-        await updateOrder(orderId, formData);
+        console.log("Updating order with ID: ", order.orderID);
+        console.log("Form data: ", formData);
+        await updateOrder(order.orderID, formData);
       } else {
         console.log("Adding new order: ", formData);
         await addOrder(formData);
