@@ -286,9 +286,12 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                     }))
                   }
                 />
-                <button type="button" onClick={handleAddItem}>
-                  Thêm
-                </button>
+                {(mode === "add" ||
+                  (mode === "detail" && order.paid === false)) && (
+                  <button type="button" onClick={handleAddItem}>
+                    Thêm
+                  </button>
+                )}
               </div>
 
               <table className="items-table">
@@ -320,12 +323,15 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                         />
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItem(index)}
-                        >
-                          Xóa
-                        </button>
+                        {(mode === "add" ||
+                          (mode === "detail" && order.paid === false)) && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(index)}
+                          >
+                            Xóa
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -335,9 +341,11 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
           </div>
         </form>
 
-        <button type="submit" className="btn-submit" onClick={handleSubmit}>
-          {mode === "add" ? "Thêm đơn hàng" : "Cập nhật"}
-        </button>
+        {(mode === "add" || (mode === "detail" && order.paid === false)) && (
+          <button type="submit" className="btn-submit" onClick={handleSubmit}>
+            {mode === "add" ? "Thêm đơn hàng" : "Cập nhật"}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -29,6 +29,7 @@ const Order = () => {
       try {
         const data = await getOrders();
         setOrder(data);
+        console.log("Fetched orders:", data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -280,12 +281,21 @@ const Order = () => {
                     {ord.paid ? "Đã thanh toán" : "Chưa thanh toán"}
                   </td>
                   <td>
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEditOrder(ord)}
-                    >
-                      Sửa
-                    </button>
+                    {ord.paid === false ? (
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEditOrder(ord)}
+                      >
+                        Sửa
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEditOrder(ord)}
+                      >
+                        Chi tiết
+                      </button>
+                    )}
                     <button
                       className="btn-delete"
                       onClick={() => handleDeleteOrder(ord.orderID)}

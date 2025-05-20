@@ -98,7 +98,9 @@ b {
 }
 
 aside {
+  position: fixed;
   height: 100vh;
+  /* z-index: 100; */
 }
 aside .top {
   background-color: var(--clr-white);
@@ -173,12 +175,13 @@ aside .slidebar a:hover span {
 }
 /* Main */
 main {
-  position: absolute;
+  position: relative;
   width: calc(100% - 18rem);
-  left: 18rem;
+  margin-left: 18rem;
   min-height: 100vh;
   background: var(--clr-white);
   transition: 0.5s;
+  width: 75rem;
 }
 .topbar {
   width: 100%;
