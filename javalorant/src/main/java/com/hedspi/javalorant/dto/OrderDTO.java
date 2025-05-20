@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hedspi.javalorant.order.CustomerInfor;
+import com.hedspi.javalorant.order.PaymentMethod;
 
 
 public class OrderDTO {
@@ -12,17 +13,21 @@ public class OrderDTO {
     private double totalAmount;
     private boolean paid;
     private CustomerInfor customerInfo;
+    private String fullName; // employee name
+    private PaymentMethod paymentMethod;
 
     public OrderDTO() {
     }
 
     public OrderDTO(String orderDate, List<Map<String, Object>> items, double totalAmount, boolean paid,
-            CustomerInfor customerInfo) {
+            CustomerInfor customerInfo, String fullName, PaymentMethod paymentMethod) {
         this.orderDate = orderDate;
         this.items = items;
         this.totalAmount = totalAmount;
         this.paid = paid;
         this.customerInfo = customerInfo;
+        this.fullName = fullName;
+        this.paymentMethod = paymentMethod;
     }
 
     public String getOrderDate() {
@@ -65,14 +70,32 @@ public class OrderDTO {
         this.customerInfo = customerInfo;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
     @Override
     public String toString() {
-        return "OrderDTO{" +
+       return "OrderDTO{" +
                 "orderDate='" + orderDate + '\'' +
                 ", items=" + items +
                 ", totalAmount=" + totalAmount +
                 ", paid=" + paid +
                 ", customerInfo=" + customerInfo +
+                ", fullName='" + fullName + '\'' +
+                ", paymentMethod=" + paymentMethod +
                 '}';
     }
 }

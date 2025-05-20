@@ -94,11 +94,13 @@ public class Store {
         return userList;
     }
 
-    public User getUserByUsername(String username) {
-        return userList.stream()
-                .filter(user -> user.getUsername().equals(username))
-                .findFirst()
-                .orElse(null);
+    public User getUserByfullName(String fullName) {
+        for (User user : userList) {
+            if (user.getFullName().equals(fullName)) {
+                return user;
+            }
+        }
+        return null;
     }
 
     public List<User> filterEmployees(FilterEmployeeDTO filterDTO, List<User> userList) {
@@ -254,15 +256,27 @@ public class Store {
         orderList.add(newOrder);
     }
 
-    public void addOrder(Order order) {
+    public Invoice generateInvoice(Date invoiceDate, Order order, PaymentMethod paymentMethod, String fullName) {
+        if (order != null) {
+            Invoice invoice = new Invoice(invoiceDate, order, paymentMethod, (Employee) getUserByfullName(fullName));
+            invoiceList.add(invoice);
+            return invoice;
+        }
+        return null;
+    }
+
+    public void addOrder(Order order, PaymentMethod paymentMethod, String fullName) {
         orderList.add(order);
+        if (order.isPaid()) {
+            generateInvoice(order.getOrderDate(), order, paymentMethod, fullName);
+        }
     }
 
     public boolean removeOrder(long orderID) {
         return orderList.removeIf(order -> order.getOrderID() == orderID);
     }
 
-    public void updateOrder(long id, Order order) {
+    public void updateOrder(long id, Order order, PaymentMethod paymentMethod, String fullName) {
         for (Order existingOrder : orderList) {
             if (existingOrder.getOrderID() == id) {
                 existingOrder.setCustomerInfo(order.getCustomerInfo());
@@ -270,6 +284,9 @@ public class Store {
                 existingOrder.setTotalAmount(order.getTotalAmount());
                 existingOrder.setItems(order.getItems());
                 existingOrder.setIsPaid(order.isPaid());
+                if (order.isPaid()) {
+                    generateInvoice(order.getOrderDate(), order, paymentMethod, fullName);
+                }
                 break;
             }
         }
@@ -398,19 +415,6 @@ public class Store {
     //////////////// Invoice Management //////////////
     public List<Invoice> getInvoiceList() {
         return invoiceList;
-    }
-
-    public Invoice generateInvoice(Date invoiceDate, long orderID, String paymentMethod, Employee employee) {
-        Order order = getOrder(orderID);
-        if (order != null) {
-            Invoice invoice = new Invoice(invoiceDate, order, employee);
-            if (paymentMethod != null) {
-                invoice.setPaymentMethod(PaymentMethod.valueOf(paymentMethod));
-            }
-            invoiceList.add(invoice);
-            return invoice;
-        }
-        return null;
     }
 
     public List<Invoice> sortInvoices(List<Invoice> invoiceList, SortInvoiceDTO sortDTO) {
@@ -619,173 +623,12 @@ public class Store {
         addProduct(new Toy("Building Blocks", 35, 20.0, 34.99, "Mega Bloks", 3));
         addProduct(new Toy("Science Kit", 15, 30.0, 49.99, "National Geographic", 10));
 
-        // Create Customer Information
-        CustomerInfor customer1 = new CustomerInfor("John Doe", "john@email.com");
-        CustomerInfor customer2 = new CustomerInfor("Jane Smith", "jane@email.com");
-        CustomerInfor customer3 = new CustomerInfor("David Wilson", "david@email.com");
-        CustomerInfor customer4 = new CustomerInfor("Sarah Brown", "sarah@email.com");
-        CustomerInfor customer5 = new CustomerInfor("Michael Johnson", "michael@email.com");
-
-        // Create Orders and Invoices
-        Date currentDate = new Date();
-        Employee employee1 = (Employee) getUserByUsername("employee1");
-        Employee employee2 = (Employee) getUserByUsername("employee2");
-        Employee employee3 = (Employee) getUserByUsername("employee3");
-
-        // Order 1
-        createOrder(currentDate);
-        Order order1 = orderList.get(orderList.size() - 1);
-        order1.setCustomerInfo(customer1);
-        addItemToOrder(order1.getOrderID(), 1, 2);
-        addItemToOrder(order1.getOrderID(), 2, 3);
-        order1.setIsPaid(true);
-        generateInvoice(currentDate, order1.getOrderID(), "CASH", employee1);
-
-        // Order 2
-        createOrder(currentDate);
-        Order order2 = orderList.get(orderList.size() - 1);
-        order2.setCustomerInfo(customer2);
-        addItemToOrder(order2.getOrderID(), 3, 1);
-        addItemToOrder(order2.getOrderID(), 4, 5);
-        order2.setIsPaid(true);
-        generateInvoice(currentDate, order2.getOrderID(), "CREDIT_CARD", employee2);
-
-        // Order 3
-        createOrder(currentDate);
-        Order order3 = orderList.get(orderList.size() - 1);
-        order3.setCustomerInfo(customer3);
-        addItemToOrder(order3.getOrderID(), 5, 2);
-        addItemToOrder(order3.getOrderID(), 6, 1);
-        addItemToOrder(order3.getOrderID(), 7, 3);
-        order3.setIsPaid(true);
-        generateInvoice(currentDate, order3.getOrderID(), "BANK_TRANSFER", employee3);
-
-        // Order 4
-        createOrder(currentDate);
-        Order order4 = orderList.get(orderList.size() - 1);
-        order4.setCustomerInfo(customer4);
-        addItemToOrder(order4.getOrderID(), 8, 4);
-        addItemToOrder(order4.getOrderID(), 9, 2);
-        order4.setIsPaid(true);
-        generateInvoice(currentDate, order4.getOrderID(), "CASH", employee1);
-
-        // Order 5
-        createOrder(currentDate);
-        Order order5 = orderList.get(orderList.size() - 1);
-        order5.setCustomerInfo(customer5);
-        addItemToOrder(order5.getOrderID(), 10, 1);
-        addItemToOrder(order5.getOrderID(), 11, 3);
-        addItemToOrder(order5.getOrderID(), 12, 2);
-        order5.setIsPaid(true);
-        generateInvoice(currentDate, order5.getOrderID(), "CREDIT_CARD", employee2);
-
-        // Additional orders with diverse data in 2025
-        CustomerInfor customer6 = new CustomerInfor("Emily Chen", "emily@email.com");
-        CustomerInfor customer7 = new CustomerInfor("Robert Taylor", "robert@email.com");
-        CustomerInfor customer8 = new CustomerInfor("Maria Garcia", "maria@email.com");
-        CustomerInfor customer9 = new CustomerInfor("James Wilson", "james@email.com");
-        CustomerInfor customer10 = new CustomerInfor("Lisa Wong", "lisa@email.com");
-
-        Employee employee4 = (Employee) getUserByUsername("employee4");
-        Employee employee5 = (Employee) getUserByUsername("employee5");
-
-        // Order 6 - March 15, 2025
-        Date date6 = new Date(1742265600000L); // 2025-03-15
-        createOrder(date6, customer6);
-        Order order6 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order6.getOrderID(), 13, 2);
-        addItemToOrder(order6.getOrderID(), 14, 1);
-        order6.setIsPaid(true);
-        generateInvoice(date6, order6.getOrderID(), "CASH", employee4);
-
-        // Order 7 - May 22, 2025
-        Date date7 = new Date(1748059200000L); // 2025-05-22
-        createOrder(date7, customer7);
-        Order order7 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order7.getOrderID(), 15, 3);
-        addItemToOrder(order7.getOrderID(), 16, 2);
-        addItemToOrder(order7.getOrderID(), 17, 1);
-        order7.setIsPaid(false);
-
-        // Order 8 - July 4, 2025
-        Date date8 = new Date(1751846400000L); // 2025-07-04
-        createOrder(date8, customer8);
-        Order order8 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order8.getOrderID(), 18, 4);
-        addItemToOrder(order8.getOrderID(), 19, 2);
-        order8.setIsPaid(true);
-        generateInvoice(date8, order8.getOrderID(), "BANK_TRANSFER", employee5);
-
-        // Order 9 - August 30, 2025
-        Date date9 = new Date(1756684800000L); // 2025-08-30
-        createOrder(date9, customer9);
-        Order order9 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order9.getOrderID(), 20, 1);
-        addItemToOrder(order9.getOrderID(), 21, 5);
-        order9.setIsPaid(true);
-        generateInvoice(date9, order9.getOrderID(), "CREDIT_CARD", employee4);
-
-        // Order 10 - October 15, 2025
-        Date date10 = new Date(1760563200000L); // 2025-10-15
-        createOrder(date10, customer10);
-        Order order10 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order10.getOrderID(), 22, 3);
-        addItemToOrder(order10.getOrderID(), 23, 2);
-        order10.setIsPaid(false);
-
-        // Order 11 - November 1, 2025
-        Date date11 = new Date(1762032000000L); // 2025-11-01
-        createOrder(date11, customer6);
-        Order order11 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order11.getOrderID(), 1, 3);
-        addItemToOrder(order11.getOrderID(), 5, 2);
-        order11.setIsPaid(true);
-        generateInvoice(date11, order11.getOrderID(), "CASH", employee5);
-
-        // Order 12 - December 24, 2025
-        Date date12 = new Date(1766620800000L); // 2025-12-24
-        createOrder(date12, customer7);
-        Order order12 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order12.getOrderID(), 8, 4);
-        addItemToOrder(order12.getOrderID(), 12, 1);
-        order12.setIsPaid(true);
-        generateInvoice(date12, order12.getOrderID(), "CREDIT_CARD", employee4);
-
-        // Order 13 - February 14, 2025
-        Date date13 = new Date(1739520000000L); // 2025-02-14
-        createOrder(date13, customer8);
-        Order order13 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order13.getOrderID(), 16, 2);
-        addItemToOrder(order13.getOrderID(), 20, 3);
-        order13.setIsPaid(false);
-
-        // Order 14 - April 1, 2025
-        Date date14 = new Date(1743475200000L); // 2025-04-01
-        createOrder(date14, customer9);
-        Order order14 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order14.getOrderID(), 3, 2);
-        addItemToOrder(order14.getOrderID(), 7, 1);
-        order14.setIsPaid(true);
-        generateInvoice(date14, order14.getOrderID(), "BANK_TRANSFER", employee5);
-
-        // Order 15 - June 30, 2025
-        Date date15 = new Date(1751155200000L); // 2025-06-30
-        createOrder(date15, customer10);
-        Order order15 = orderList.get(orderList.size() - 1);
-        addItemToOrder(order15.getOrderID(), 10, 3);
-        addItemToOrder(order15.getOrderID(), 15, 2);
-        addItemToOrder(order15.getOrderID(), 18, 1);
-        order15.setIsPaid(true);
-        generateInvoice(date15, order15.getOrderID(), "CASH", employee4);
-
         // Add Expenses
+        Date currentDate = new Date();
         addExpense(new Expense("Rent", 1000.0, currentDate, "Monthly store rent"));
         addExpense(new Expense("Utilities", 200.0, currentDate, "Electricity and water"));
         addExpense(new Expense("Supplies", 150.0, currentDate, "Office supplies"));
         addExpense(new Expense("Marketing", 300.0, currentDate, "Online advertisements"));
         addExpense(new Expense("Insurance", 250.0, currentDate, "Store insurance"));
-        addExpense(new Expense("Maintenance", 180.0, currentDate, "Store maintenance"));
-        addExpense(new Expense("Internet", 100.0, currentDate, "Internet service"));
-        addExpense(new Expense("Employee Training", 400.0, currentDate, "Staff development"));
     }
 }

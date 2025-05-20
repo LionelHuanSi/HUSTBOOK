@@ -13,12 +13,13 @@ public class Invoice {
     private PaymentMethod paymentMethod;
     private Employee employee;
 
-    public Invoice(Date invoiceDate, Order order, Employee employee) {
+    public Invoice(Date invoiceDate, Order order, PaymentMethod paymentMethod, Employee employee) {
         Invoice.countInvoice++;
         this.invoiceID = Invoice.countInvoice;
         this.invoiceDate = invoiceDate;
         this.order = order;
         this.totalAmount = order.getTotalAmount();
+        this.paymentMethod = paymentMethod;
         this.employee = employee;
     }
 
@@ -69,16 +70,5 @@ public class Invoice {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
-    }
-
-    public String generateInvoiceDetails() {
-        StringBuilder details = new StringBuilder();
-        details.append("Invoice ID: ").append(invoiceID).append("\n");
-        details.append("Date: ").append(invoiceDate).append("\n");
-        details.append("Order ID: ").append(order.getOrderID()).append("\n");
-        details.append("Total Amount: $").append(String.format("%.2f", totalAmount)).append("\n");
-        details.append("Payment Method: ").append(paymentMethod);
-        details.append("\nEmployee: ").append(employee.getUsername()).append("\n");
-        return details.toString();
     }
 }

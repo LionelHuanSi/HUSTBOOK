@@ -31,3 +31,13 @@ export const getInvoicesByFilter = async (filterData) => {
         throw error;
     }
 };
+
+export const getInvoicesByOrderID = async (orderID) => {
+    try {
+        const response = await axios.get(`${API_URL}/order/${orderID}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching invoices by order ID:', error);
+        throw error;
+    }
+}

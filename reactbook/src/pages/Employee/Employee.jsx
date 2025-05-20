@@ -209,6 +209,7 @@ const Employee = () => {
                   </button>
                 </th>
                 <th>Tên nhân viên</th>
+                <th>Số điện thoại</th>
                 <th>
                   Lương
                   <button
@@ -232,6 +233,7 @@ const Employee = () => {
                 <tr key={emp.userID}>
                   <td>NV{String(emp.userID).padStart(3, "0")}</td>
                   <td>{emp.fullName}</td>
+                  <td>{emp.phoneNumber}</td>
                   <td>
                     {(emp.basicSalary * emp.coefficient).toLocaleString()}
                   </td>

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import "./AddOrderForm.css";
 import { addOrder, updateOrder } from "../../services/OrderService";
 import { getAllProducts } from "../../services/InventoryService";
+import { getInvoicesByOrderID } from "../../services/InvoiceService";
+import { getUsers } from "../../services/UserService";
 
 const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
   const [error, setError] = useState(null);
@@ -18,6 +20,8 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
           items: order.items || [],
           totalAmount: order.totalAmount || 0,
           paid: order.paid || false,
+          paymentMethod: null,
+          fullName: localStorage.getItem("fullName") || "",
         }
       : {
           orderDate: new Date().toISOString().split("T")[0],
@@ -28,6 +32,8 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
           items: [],
           totalAmount: 0,
           paid: false,
+          paymentMethod: null,
+          fullName: "",
         }
   );
 
@@ -44,6 +50,7 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
   };
 
   const [products, setProducts] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -59,6 +66,39 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
     if (mode === "add" || (mode === "detail" && order.paid === false)) {
       fetchProducts();
     }
+  }, [mode]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const data = await getUsers();
+        setEmployees(data);
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching employees:", err);
+      }
+    };
+    fetchEmployees();
+  }, [mode]);
+
+  useEffect(() => {
+    const fetchInvoiceByOrderID = async () => {
+      try {
+        const data = await getInvoicesByOrderID(order.orderID);
+        setFormData((prev) => ({
+          ...prev,
+          paymentMethod: data.paymentMethod,
+          fullName: data.employee.fullName,
+        }));
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching invoice by order ID:", err);
+      }
+
+      if (mode === "detail" && order.paid === true) {
+        fetchInvoiceByOrderID(order.orderID);
+      }
+    };
   }, [mode]);
 
   const handleInputChange = (e) => {
@@ -142,12 +182,27 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+      formData.orderDate === "" ||
+      formData.customerInfo.name === "" ||
+      formData.customerInfo.contactInfo === "" ||
+      formData.items.length === 0 ||
+      (formData.paid && formData.paymentMethod === null)
+    ) {
+      setError(new Error("Vui lòng điền đầy đủ thông tin"));
+      return;
+    }
     try {
       if (mode === "detail") {
         console.log("Updating order with ID: ", order.orderID);
         console.log("Form data: ", formData);
         await updateOrder(order.orderID, formData);
       } else {
+        if (formData.fullName === "") {
+          setError(new Error("Vui lòng chọn nhân viên"));
+          return;
+        }
+        localStorage.setItem("fullName", formData.fullName);
         console.log("Adding new order: ", formData);
         await addOrder(formData);
       }
@@ -219,6 +274,28 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
               </div>
             </div>
 
+            <div className="employee-info">
+              <h3>Thông tin nhân viên</h3>
+              <div className="form-group">
+                <label htmlFor="fullName">Tên nhân viên:</label>
+                <select
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Chọn nhân viên</option>
+                  {employees
+                    .filter((user) => user.role === "Employee")
+                    .map((employee) => (
+                      <option key={employee.userID} value={employee.fullName}>
+                        {employee.fullName}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
             <div className="payment-info">
               <div className="form-group">
                 <label htmlFor="paid">Trạng thái thanh toán:</label>
@@ -231,6 +308,23 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                   <option value={true}>Đã thanh toán</option>
                 </select>
               </div>
+              {formData.paid && (
+                <div className="form-group">
+                  <label htmlFor="paymentMethod">Phương thức thanh toán:</label>
+                  <select
+                    id="paymentMethod"
+                    value={formData.paymentMethod}
+                    onChange={handleInputChange}
+                    required={formData.paid}
+                  >
+                    <option value="">Chọn phương thức</option>
+                    <option value="CASH">Tiền mặt</option>
+                    <option value="CREDIT_CARD">Thẻ tín dụng</option>
+                    <option value="BANK_TRANSFER">Chuyển khoản</option>
+                    <option value="E_WALLET">Ví điện tử</option>
+                  </select>
+                </div>
+              )}
               <div className="form-group">
                 <label htmlFor="totalAmount">Tổng tiền:</label>
                 <input
