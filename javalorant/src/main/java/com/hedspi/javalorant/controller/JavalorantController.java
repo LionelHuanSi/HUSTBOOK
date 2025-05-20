@@ -18,11 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hedspi.javalorant.dto.EmployeeDTO;
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterEmployeeDTO;
 import com.hedspi.javalorant.dto.FilterInvoiceDTO;
 import com.hedspi.javalorant.dto.FilterOrderDTO;
 import com.hedspi.javalorant.dto.OrderDTO;
 import com.hedspi.javalorant.dto.ProductDTO;
+import com.hedspi.javalorant.dto.SortEmployeeDTO;
 import com.hedspi.javalorant.dto.SortInvoiceDTO;
 import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
@@ -35,6 +38,7 @@ import com.hedspi.javalorant.order.Invoice;
 import com.hedspi.javalorant.order.Order;
 import com.hedspi.javalorant.order.OrderItem;
 import com.hedspi.javalorant.store.Store;
+import com.hedspi.javalorant.user.Employee;
 import com.hedspi.javalorant.user.User;
 
 @RestController
@@ -70,14 +74,74 @@ public class JavalorantController {
         return store.getUserList();
     }
 
-    @GetMapping("/users/{username}")
-    public User getUser(@PathVariable String username) {
-        return store.getUserByUsername(username);
+    @PostMapping("/users")
+    public void addUser(@RequestBody EmployeeDTO employeeDTO) {
+        System.out.println("Received employeeDTO: " + employeeDTO.toString());
+        try {
+            User user = new Employee(
+                employeeDTO.getUsername(),
+                employeeDTO.getPassword(),
+                employeeDTO.getFullName(),
+                employeeDTO.getPhoneNumber(),
+                employeeDTO.getBasicSalary(),
+                employeeDTO.getCoefficient()
+            );
+            store.addUser(user);
+        } catch (Exception e) {
+            System.out.println("Error adding user: " + e.getMessage());
+        }
     }
 
-    @PostMapping("/users")
-    public void addUser(@RequestBody User user) {
-        store.addUser(user);
+    @PostMapping("/users/{id}")
+    public ResponseEntity<?> updateUser(
+            @PathVariable long id,
+            @RequestBody EmployeeDTO employeeDTO) {
+        try {
+            System.out.println("Received employeeDTO: " + employeeDTO.toString());
+            User user = new Employee(
+                employeeDTO.getUsername(),
+                employeeDTO.getPassword(),
+                employeeDTO.getFullName(),
+                employeeDTO.getPhoneNumber(),
+                employeeDTO.getBasicSalary(),
+                employeeDTO.getCoefficient()
+            );
+            user.setUserID(id);
+            store.updateUser(user);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Lỗi khi cập nhật người dùng: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/users/filter")
+    public List<User> filterEmployees(@RequestBody FilterEmployeeDTO filterDTO) {
+        System.out.println("Received filterDTO: " + filterDTO);
+        return store.filterEmployees(filterDTO, store.getUserList());
+    }
+
+    @PostMapping("/users/sort")
+    public List<User> sortEmployees(@RequestBody SortEmployeeDTO sortDTO) {
+        System.out.println("Received sortDTO: " + sortDTO);
+        return store.sortEmployees(store.getUserList(), sortDTO);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> removeUser(@PathVariable long id) {
+        try {
+            System.out.println("Removing user with ID: " + id);
+            boolean result = store.removeUser(id);
+            if (result) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.badRequest()
+                    .body("Không tìm thấy người dùng với ID: " + id);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Lỗi khi xóa người dùng: " + e.getMessage());
+        }
     }
 
 

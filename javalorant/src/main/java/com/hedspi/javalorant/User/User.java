@@ -7,16 +7,16 @@ public class User {
     private String password;
     private String fullName;
     private String phoneNumber;
-    private UserRole Role;
+    protected UserRole Role;
 
-    public User(String username, String password, String fullName, String phoneNumber, UserRole role) {
+    public User(String username, String password, String fullName, String phoneNumber) {
         User.countUser++;
         this.user_ID = countUser;
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
-        this.Role = role;
+        this.Role = null;
     }
 
     public long getUserID() {

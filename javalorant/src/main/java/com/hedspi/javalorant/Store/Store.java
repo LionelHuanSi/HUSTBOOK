@@ -4,10 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.hedspi.javalorant.dto.FilterDTO;
+import com.hedspi.javalorant.dto.FilterEmployeeDTO;
 import com.hedspi.javalorant.dto.FilterInvoiceDTO;
 import com.hedspi.javalorant.dto.FilterOrderDTO;
+import com.hedspi.javalorant.dto.SortEmployeeDTO;
 import com.hedspi.javalorant.dto.SortInvoiceDTO;
 import com.hedspi.javalorant.dto.SortOrderDTO;
 import com.hedspi.javalorant.dto.SortProductsDTO;
@@ -73,6 +76,15 @@ public class Store {
                 user.setFullName(updateUser.getFullName());
                 user.setPhoneNumber(updateUser.getPhoneNumber());
                 user.setRole(updateUser.getRole());
+                switch (user.getRole()) {
+                    case Employee -> {
+                        Employee employee = (Employee) user;
+                        employee.setBasicSalary(((Employee) updateUser).getBasicSalary());
+                        employee.setCoefficient(((Employee) updateUser).getCoefficient());
+                    }
+                    default -> {
+                    }
+                }
                 break;
             }
         }
@@ -87,6 +99,78 @@ public class Store {
                 .filter(user -> user.getUsername().equals(username))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<User> filterEmployees(FilterEmployeeDTO filterDTO, List<User> userList) {
+        List<User> filteredEmployees = userList.stream()
+            .filter(user -> user.getRole() == UserRole.Employee)
+            .collect(Collectors.toList());
+
+        if (filterDTO.getName() != null && !filterDTO.getName().isEmpty()) {
+            filteredEmployees = filteredEmployees.stream()
+                .filter(emp -> emp.getFullName().toLowerCase()
+                    .contains(filterDTO.getName().toLowerCase()))
+                .collect(Collectors.toList());
+        }
+
+        if (filterDTO.getSalaryFrom() != null && filterDTO.getSalaryFrom() > 0) {
+            filteredEmployees = filteredEmployees.stream()
+                .filter(emp -> ((Employee)emp).tinhLuong() >= filterDTO.getSalaryFrom())
+                .collect(Collectors.toList());
+        }
+
+        if (filterDTO.getSalaryTo() != null && filterDTO.getSalaryTo() > 0) {
+            filteredEmployees = filteredEmployees.stream()
+                .filter(emp -> ((Employee)emp).tinhLuong() <= filterDTO.getSalaryTo())
+                .collect(Collectors.toList());
+        }
+
+        return filteredEmployees;
+    }
+
+    public List<User> sortEmployees(List<User> userList, SortEmployeeDTO sortDTO) {
+        List<User> employees = userList.stream()
+            .filter(user -> user.getRole() == UserRole.Employee)
+            .collect(Collectors.toList());
+
+        if (sortDTO.getUserIDList() != null && !sortDTO.getUserIDList().isEmpty()) {
+            employees = employees.stream()
+                .filter(emp -> sortDTO.getUserIDList().contains(emp.getUserID()))
+                .collect(Collectors.toList());
+        }
+
+        if (sortDTO.getField() != null && !sortDTO.getField().isEmpty()) {
+            switch (sortDTO.getField()) {
+                case "userID" -> {
+                    return employees.stream()
+                        .sorted((e1, e2) -> {
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Long.compare(e1.getUserID(), e2.getUserID());
+                            } else {
+                                return Long.compare(e2.getUserID(), e1.getUserID());
+                            }
+                        })
+                        .collect(Collectors.toList());
+                }
+                case "salary" -> {
+                    return employees.stream()
+                        .sorted((e1, e2) -> {
+                            double salary1 = ((Employee)e1).tinhLuong();
+                            double salary2 = ((Employee)e2).tinhLuong();
+                            if (sortDTO.getType().equalsIgnoreCase("up")) {
+                                return Double.compare(salary1, salary2);
+                            } else {
+                                return Double.compare(salary2, salary1);
+                            }
+                        })
+                        .collect(Collectors.toList());
+                }
+                default -> {
+                    return employees;
+                }
+            }
+        }
+        return employees;
     }
 
 
@@ -498,12 +582,12 @@ public class Store {
 
     public void initializeData() {
         // Initialize Users
-        addUser(new User("admin", "admin123", "Nguyễn Văn A", "0123456789", UserRole.Admin));
-        addUser(new Employee("employee1", "e123", "Nguyễn Văn An", "0123456789", UserRole.Employee, 500000));
-        addUser(new Employee("employee2", "e123", "Nguyễn Văn Anh", "0123456789", UserRole.Employee, 700000));
-        addUser(new Employee("employee3", "e123", "Trần Thị Bình", "0987654321", UserRole.Employee, 600000));
-        addUser(new Employee("employee4", "e123", "Lê Văn Cường", "0369852147", UserRole.Employee, 550000));
-        addUser(new Employee("employee5", "e123", "Phạm Thị Dung", "0741852963", UserRole.Employee, 650000));
+        addUser(new User("admin", "admin123", "Nguyễn Văn A", "0123456789"));
+        addUser(new Employee("employee1", "e123", "Nguyễn Văn An", "0123456789", 5000000, 1));
+        addUser(new Employee("employee2", "e123", "Nguyễn Văn Anh", "0123456789", 5000000, 1.5));
+        addUser(new Employee("employee3", "e123", "Trần Thị Bình", "0987654321", 5000000, 2));
+        addUser(new Employee("employee4", "e123", "Lê Văn Cường", "0369852147", 5000000, 2.5));
+        addUser(new Employee("employee5", "e123", "Phạm Thị Dung", "0741852963", 5000000, 3));
 
         // Initialize Books
         addProduct(new Book("The Art of Programming", 10, 35.0, 45.0, "Tech Publications", "Donald Knuth", "978-0201038019"));
