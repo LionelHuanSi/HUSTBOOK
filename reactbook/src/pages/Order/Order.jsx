@@ -281,27 +281,29 @@ const Order = () => {
                     {ord.paid ? "Đã thanh toán" : "Chưa thanh toán"}
                   </td>
                   <td>
-                    {ord.paid === false ? (
+                    <div className="action-buttons-cell">
+                      {ord.paid === false ? (
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEditOrder(ord)}
+                        >
+                          Sửa
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEditOrder(ord)}
+                        >
+                          Chi tiết
+                        </button>
+                      )}
                       <button
-                        className="btn-edit"
-                        onClick={() => handleEditOrder(ord)}
+                        className="btn-delete"
+                        onClick={() => handleDeleteOrder(ord.orderID)}
                       >
-                        Sửa
+                        Xoá
                       </button>
-                    ) : (
-                      <button
-                        className="btn-edit"
-                        onClick={() => handleEditOrder(ord)}
-                      >
-                        Chi tiết
-                      </button>
-                    )}
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteOrder(ord.orderID)}
-                    >
-                      Xoá
-                    </button>
+                    </div>
                   </td>
                 </tr>
               ))}

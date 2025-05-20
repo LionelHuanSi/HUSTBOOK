@@ -34,7 +34,7 @@
 /* Style cho nút trong bảng */
 .inventory-table .btn-edit,
 .inventory-table .btn-delete {
-  padding: 0.3rem 0.8rem;
+  padding: 0.2rem 0.7rem;
   border-radius: var(--border-radius-1);
   border: none;
   font-size: 0.95rem;
@@ -42,6 +42,7 @@
   cursor: pointer;
   margin-right: 0.3rem;
   transition: background 0.2s;
+  width: 73px;
 }
 .inventory-table .btn-edit {
   background: var(--clr-success);

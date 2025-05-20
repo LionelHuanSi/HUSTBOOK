@@ -56,7 +56,7 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
       }
     };
 
-    if (mode === "add") {
+    if (mode === "add" || (mode === "detail" && order.paid === false)) {
       fetchProducts();
     }
   }, [mode]);
