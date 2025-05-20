@@ -1,4 +1,4 @@
-.user-management {
+.employee-management {
   background: var(--clr-white);
   border-radius: var(--border-radius-2);
   box-shadow: var(--box-shadow);
@@ -10,7 +10,7 @@
   min-height: 92vh;
 }
 
-.user-management-title {
+.employee-management-title {
   font-size: 2rem;
   font-weight: 700;
   background: linear-gradient(
@@ -28,13 +28,13 @@
   line-height: 1.2;
 }
 
-.user-actions {
+.employee-actions {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.user-actions .btn-add {
+.employee-actions .btn-add {
   padding: 0.5rem 1.2rem;
   border-radius: var(--border-radius-1);
   border: none;
@@ -44,27 +44,27 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.user-actions .btn-add:hover {
+.employee-actions .btn-add:hover {
   opacity: 0.85;
 }
 
-.user-filters {
+.employee-filters {
   display: flex;
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
 }
-.user-filters input[type="text"],
-.user-filters input[type="number"] {
+.employee-filters input[type="text"],
+.employee-filters input[type="number"] {
   padding: 0.4rem 0.8rem;
   border-radius: var(--border-radius-1);
   border: 1px solid var(--clr-info-light);
   background: var(--clr-light);
   font-size: 1rem;
 }
-.user-filters .btn-view-all,
-.user-filters .btn-filter {
+.employee-filters .btn-view-all,
+.employee-filters .btn-filter {
   padding: 0.4rem 1rem;
   border-radius: var(--border-radius-1);
   border: none;
@@ -74,17 +74,36 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.user-filters .btn-view-all {
+.employee-filters .btn-view-all {
   background: var(--clr-info-dark);
 }
-.user-filters .btn-filter {
+.employee-filters .btn-filter {
   background: var(--clr-success);
 }
-.user-filters button:hover {
+.employee-filters button:hover {
   opacity: 0.85;
 }
 
-.user-table {
+.salary-range {
+  display: flex;
+  gap: 1rem;
+}
+
+.salary-input {
+  display: flex;
+  align-items: center;
+}
+
+.salary-input input[type="number"] {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  border: 1px solid var(--clr-info-light);
+  background: var(--clr-light);
+  font-size: 1rem;
+  width: 150px;
+}
+
+.employee-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--clr-white);
@@ -92,25 +111,46 @@
   overflow: hidden;
   box-shadow: var(--box-shadow);
 }
-.user-table th,
-.user-table td {
+.employee-table th,
+.employee-table td {
   padding: 0.8rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--clr-info-light);
 }
-.user-table th {
+.employee-table th {
   background: var(--clr-light);
   color: var(--clr-dark);
   font-weight: 600;
+  position: relative;
+  padding-right: 45px; /* Increased to make room for buttons */
 }
-.user-table tr:last-child td {
+.employee-table .btn-sort-up,
+.employee-table .btn-sort-down {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 5px;
+  color: #333;
+}
+.employee-table .btn-sort-up {
+  right: 22px; /* Adjust position */
+}
+.employee-table .btn-sort-down {
+  right: 8px; /* Adjust position */
+}
+.employee-table .btn-sort-up:hover,
+.employee-table .btn-sort-down:hover {
+  color: #007bff;
+}
+.employee-table tr:last-child td {
   border-bottom: none;
 }
-.user-table tr:hover {
+.employee-table tr:hover {
   background: var(--clr-light);
 }
-.user-table .btn-edit,
-.user-table .btn-delete {
+.employee-table .btn-edit,
+.employee-table .btn-delete {
   padding: 0.3rem 0.8rem;
   border-radius: var(--border-radius-1);
   border: none;
@@ -120,35 +160,48 @@
   margin-right: 0.3rem;
   transition: background 0.2s;
 }
-.user-table .btn-edit {
+.employee-table .btn-edit {
   background: var(--clr-success);
   color: var(--clr-white);
 }
-.user-table .btn-delete {
+.employee-table .btn-delete {
   background: var(--clr-danger);
   color: var(--clr-white);
 }
-.user-table .btn-edit:hover,
-.user-table .btn-delete:hover {
+.employee-table .btn-edit:hover,
+.employee-table .btn-delete:hover {
   opacity: 0.85;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
-  .user-management {
+  .employee-management {
     padding: 1rem;
   }
-  .user-filters {
+  .employee-filters {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
   }
-  .user-actions {
+  .employee-actions {
     flex-direction: column;
     gap: 0.5rem;
   }
-  .user-table th,
-  .user-table td {
+  .employee-table th,
+  .employee-table td {
     padding: 0.5rem 0.5rem;
   }
+}
+
+.filter-role {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  border: 1px solid var(--clr-info-light);
+  background: var(--clr-light);
+  font-size: 1rem;
+}
+
+.filter-role:focus {
+  outline: none;
+  border-color: #7380ec;
 }

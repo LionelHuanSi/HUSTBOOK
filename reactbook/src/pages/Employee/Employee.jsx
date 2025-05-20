@@ -8,6 +8,12 @@ import "../../styles/base.css";
 const Employee = () => {
   const [employee, setEmployee] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterData, setFilterData] = useState({
+    name: "",
+    role: "",
+    salaryFrom: "",
+    salaryTo: "",
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +25,29 @@ const Employee = () => {
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilterData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSort = (field, type) => {
+    const sortedEmployee = [...employee].sort((a, b) => {
+      if (field === "id") {
+        return type === "up" ? a.id - b.id : b.id - a.id;
+      }
+      if (field === "salary") {
+        const salaryA = 15000000; // Replace with actual salary when implemented
+        const salaryB = 15000000; // Replace with actual salary when implemented
+        return type === "up" ? salaryA - salaryB : salaryB - salaryA;
+      }
+      return 0;
+    });
+    setEmployee(sortedEmployee);
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -39,33 +68,92 @@ const Employee = () => {
             <img src="/assets/Customer1.png" alt="" />
           </div>
         </div>
-        <section className="user-management">
-          <h1 className="user-management-title">Quản lý nhân viên</h1>
-          <div className="user-actions">
+        <section className="employee-management">
+          <h1 className="employee-management-title">Quản lý nhân viên</h1>
+          <div className="employee-actions">
             <button className="btn-add">Thêm nhân viên</button>
           </div>
-          <div className="user-filters">
+          <div className="employee-filters">
             <button className="btn-view-all">Duyệt toàn bộ</button>
             <input
               type="text"
               className="filter-name"
               placeholder="Tên nhân viên"
+              name="name"
+              value={filterData.name}
+              onChange={handleFilterChange}
             />
-            <input
-              type="number"
-              className="filter-salary"
-              placeholder="Lương từ"
-              min="0"
-            />
+            <select
+              className="filter-role"
+              name="role"
+              value={filterData.role}
+              onChange={handleFilterChange}
+            >
+              <option value="">Chọn chức vụ</option>
+              <option value="admin">Quản trị viên</option>
+              <option value="employee">Nhân viên</option>
+            </select>
+            <div className="salary-range">
+              <div className="salary-input">
+                <input
+                  type="number"
+                  className="filter-salary"
+                  placeholder="Lương từ"
+                  min="0"
+                  name="salaryFrom"
+                  value={filterData.salaryFrom}
+                  onChange={handleFilterChange}
+                />
+              </div>
+              <div className="salary-input">
+                <input
+                  type="number"
+                  className="filter-salary"
+                  placeholder="Lương đến"
+                  min="0"
+                  name="salaryTo"
+                  value={filterData.salaryTo}
+                  onChange={handleFilterChange}
+                />
+              </div>
+            </div>
             <button className="btn-filter">Lọc</button>
           </div>
-          <table className="user-table">
+          <table className="employee-table">
             <thead>
               <tr>
-                <th>Mã NV</th>
+                <th>
+                  Mã NV
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("id", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("id", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
                 <th>Tên nhân viên</th>
                 <th>Chức vụ</th>
-                <th>Lương</th>
+                <th>
+                  Lương
+                  <button
+                    className="btn-sort-up"
+                    onClick={() => handleSort("salary", "up")}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="btn-sort-down"
+                    onClick={() => handleSort("salary", "down")}
+                  >
+                    ▼
+                  </button>
+                </th>
                 <th>Hành động</th>
               </tr>
             </thead>
