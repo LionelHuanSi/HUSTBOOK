@@ -9,7 +9,6 @@ public class Invoice {
     private long invoiceID;
     private Date invoiceDate;
     private Order order;
-    private double totalAmount;
     private PaymentMethod paymentMethod;
     private Employee employee;
 
@@ -18,7 +17,6 @@ public class Invoice {
         this.invoiceID = Invoice.countInvoice;
         this.invoiceDate = invoiceDate;
         this.order = order;
-        this.totalAmount = order.getTotalAmount();
         this.paymentMethod = paymentMethod;
         this.employee = employee;
     }
@@ -45,16 +43,18 @@ public class Invoice {
 
     public void setOrder(Order order) {
         this.order = order;
-        this.totalAmount = order.getTotalAmount();
     }
 
     public double getTotalAmount() {
-        return totalAmount;
+        if(this.order.isPaid()){
+            return this.order.getTotalAmount();
+        }
+        return 0.0;
     }
 
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
+    /*public void setTotalAmount(double totalAmount) {
+        this.order.setTotalAmount(totalAmount);
+    }*/
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;

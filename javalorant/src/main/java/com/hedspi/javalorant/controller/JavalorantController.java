@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import com.hedspi.javalorant.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hedspi.javalorant.dto.EmployeeDTO;
-import com.hedspi.javalorant.dto.FilterDTO;
-import com.hedspi.javalorant.dto.FilterEmployeeDTO;
-import com.hedspi.javalorant.dto.FilterInvoiceDTO;
-import com.hedspi.javalorant.dto.FilterOrderDTO;
-import com.hedspi.javalorant.dto.OrderDTO;
-import com.hedspi.javalorant.dto.ProductDTO;
-import com.hedspi.javalorant.dto.SortEmployeeDTO;
-import com.hedspi.javalorant.dto.SortInvoiceDTO;
-import com.hedspi.javalorant.dto.SortOrderDTO;
-import com.hedspi.javalorant.dto.SortProductsDTO;
 import com.hedspi.javalorant.expense.Expense;
 import com.hedspi.javalorant.inventory.Book;
 import com.hedspi.javalorant.inventory.Product;
@@ -175,37 +165,31 @@ public class JavalorantController {
             System.out.println("Name: " + productDTO.getName());
             System.out.println("Selling Price: " + productDTO.getSellingPrice());
             switch (productDTO.getProductType().toLowerCase()) {
-                case "book" -> {
-                    product = new Book(
-                        productDTO.getName(),      
-                        productDTO.getQuantity(),     
-                        productDTO.getPurchasePrice(),
-                        productDTO.getSellingPrice(), 
-                        productDTO.getPublisher(),    
-                        productDTO.getAuthor(),       
-                        productDTO.getISBN()          
-                    );
-                }
-                case "stationary" -> {
-                    product = new Stationary(
-                        productDTO.getName(),      
-                        productDTO.getQuantity(),     
-                        productDTO.getPurchasePrice(),
-                        productDTO.getSellingPrice(), 
-                        productDTO.getBrand(),        
-                        productDTO.getStationaryType() 
-                    );
-                }
-                case "toy" -> {
-                    product = new Toy(
-                        productDTO.getName(),      
-                        productDTO.getQuantity(),     
-                        productDTO.getPurchasePrice(),
-                        productDTO.getSellingPrice(), 
-                        productDTO.getBrand(),        
-                        productDTO.getSuitableAge()       
-                    );
-                }
+                case "book" -> product = new Book(
+                    productDTO.getName(),
+                    productDTO.getQuantity(),
+                    productDTO.getPurchasePrice(),
+                    productDTO.getSellingPrice(),
+                    productDTO.getPublisher(),
+                    productDTO.getAuthor(),
+                    productDTO.getISBN()
+                );
+                case "stationary" -> product = new Stationary(
+                    productDTO.getName(),
+                    productDTO.getQuantity(),
+                    productDTO.getPurchasePrice(),
+                    productDTO.getSellingPrice(),
+                    productDTO.getBrand(),
+                    productDTO.getStationaryType()
+                );
+                case "toy" -> product = new Toy(
+                    productDTO.getName(),
+                    productDTO.getQuantity(),
+                    productDTO.getPurchasePrice(),
+                    productDTO.getSellingPrice(),
+                    productDTO.getBrand(),
+                    productDTO.getSuitableAge()
+                );
                 default -> {
                     return ResponseEntity.badRequest()
                         .body("Loại sản phẩm không hợp lệ: " + productDTO.getProductType());
@@ -438,41 +422,135 @@ public class JavalorantController {
     }
 
     @PostMapping("/expenses")
-    public void addExpense(@RequestBody Expense expense) {
-        store.addExpense(expense);
+    public void addExpense(@RequestBody ExpenseDTO expenseDTO) throws ParseException {
+        System.out.println("Received expenseDTO: " + expenseDTO.toString());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date date = dateFormat.parse(expenseDTO.getDate());
+        Expense newExpense = new Expense(
+                expenseDTO.getExpenseType(),
+                expenseDTO.getAmount(),
+                date,
+                expenseDTO.getDescription()
+        );
+        store.addExpense(newExpense);
     }
+
+    @PostMapping("/expenses/{id}")
+    public void updateExpense(@PathVariable long id, @RequestBody ExpenseDTO expenseDTO) throws ParseException {
+        System.out.println("Received expenseDTO: " + expenseDTO.toString());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date date = dateFormat.parse(expenseDTO.getDate());
+        Expense updateExpense = new Expense(
+                expenseDTO.getExpenseType(),
+                expenseDTO.getAmount(),
+                date,
+                expenseDTO.getDescription()
+        );
+        store.updateExpense(id, updateExpense);
+    }
+
+    @DeleteMapping("/expenses/{id}")
+    public void removeExpense(@PathVariable long id) {
+        store.removeExpense(id);
+    }
+
+
 
     // Financial Reports APIs
-    @GetMapping("/finances/total-expenses")
-    public double getTotalExpenses() {
-        return store.getTotalExpenses();
+    @PostMapping("/finances/totalexpense")
+    public double getTotalExpense(@RequestBody  FilterFinanceDTO filterDTO) throws ParseException {
+        System.out.println("Received filterDTO: " + filterDTO.toString());
+        String startDateStr = filterDTO.getStartDate();
+        String endDateStr = filterDTO.getEndDate();
+        
+        // Xử lý cả null và chuỗi rỗng
+        boolean isStartDateEmpty = startDateStr == null || startDateStr.isEmpty();
+        boolean isEndDateEmpty = endDateStr == null || endDateStr.isEmpty();
+        
+        if (isStartDateEmpty && isEndDateEmpty) {
+            return store.getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(null, null);
+        }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        
+        if (isStartDateEmpty && !isEndDateEmpty) {
+            Date endDate = dateFormat.parse(endDateStr);
+            return store.getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(null, endDate);
+        }
+        
+        if (!isStartDateEmpty && isEndDateEmpty) {
+            Date startDate = dateFormat.parse(startDateStr);
+            return store.getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(startDate, null);
+        }
+        
+        Date startDate = dateFormat.parse(startDateStr);
+        Date endDate = dateFormat.parse(endDateStr);
+        return store.getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(startDate, endDate);
     }
 
-    @GetMapping("/finances/revenue")
-    public double getRevenue(
-            @RequestParam Long startDate,
-            @RequestParam Long endDate) {
-        return store.getRevenueInPeriod(new Date(startDate), new Date(endDate));
+    @PostMapping("/finances/revenue")
+    public double getRevenue(@RequestBody FilterFinanceDTO filterDTO) throws ParseException {
+        String startDateStr = filterDTO.getStartDate();
+        String endDateStr = filterDTO.getEndDate();
+        
+        // Xử lý cả null và chuỗi rỗng
+        boolean isStartDateEmpty = startDateStr == null || startDateStr.isEmpty();
+        boolean isEndDateEmpty = endDateStr == null || endDateStr.isEmpty();
+        
+        if (isStartDateEmpty && isEndDateEmpty) {
+            return store.getRevenueInPeriod(null, null);
+        }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        
+        if (isStartDateEmpty && !isEndDateEmpty) {
+            Date endDate = dateFormat.parse(endDateStr);
+            return store.getRevenueInPeriod(null, endDate);
+        }
+        
+        if (!isStartDateEmpty && isEndDateEmpty) {
+            Date startDate = dateFormat.parse(startDateStr);
+            return store.getRevenueInPeriod(startDate, null);
+        }
+        
+        Date startDate = dateFormat.parse(startDateStr);
+        Date endDate = dateFormat.parse(endDateStr);
+        return store.getRevenueInPeriod(startDate, endDate);
     }
 
-    @GetMapping("/finances/expenses")
-    public double getExpenses(
-            @RequestParam Long startDate,
-            @RequestParam Long endDate) {
-        return store.getExpensesInPeriod(new Date(startDate), new Date(endDate));
+    @PostMapping("/finances/profit")
+    public double getProfit(@RequestBody FilterFinanceDTO filterDTO) throws ParseException {
+        String startDateStr = filterDTO.getStartDate();
+        String endDateStr = filterDTO.getEndDate();
+        
+        // Xử lý cả null và chuỗi rỗng
+        boolean isStartDateEmpty = startDateStr == null || startDateStr.isEmpty();
+        boolean isEndDateEmpty = endDateStr == null || endDateStr.isEmpty();
+        
+        if (isStartDateEmpty && isEndDateEmpty) {
+            return store.getProfitInPeriod(null, null);
+        }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        
+        if (isStartDateEmpty && !isEndDateEmpty) {
+            Date endDate = dateFormat.parse(endDateStr);
+            return store.getProfitInPeriod(null, endDate);
+        }
+        
+        if (!isStartDateEmpty && isEndDateEmpty) {
+            Date startDate = dateFormat.parse(startDateStr);
+            return store.getProfitInPeriod(startDate, null);
+        }
+        
+        Date startDate = dateFormat.parse(startDateStr);
+        Date endDate = dateFormat.parse(endDateStr);
+        return store.getProfitInPeriod(startDate, endDate);
     }
 
-    @GetMapping("/finances/cogs")
-    public double getCOGS(
-            @RequestParam Long startDate,
-            @RequestParam Long endDate) {
-        return store.getCOGSInPeriod(new Date(startDate), new Date(endDate));
-    }
-
-    @GetMapping("/finances/profit")
-    public double getProfit(
-            @RequestParam Long startDate,
-            @RequestParam Long endDate) {
-        return store.getProfitInPeriod(new Date(startDate), new Date(endDate));
-    }
 }

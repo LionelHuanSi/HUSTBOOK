@@ -137,6 +137,77 @@
   background: var(--clr-light);
 }
 
+/* Action Buttons */
+.finance-actions {
+  margin: 1rem 0;
+}
+
+.btn-add {
+  background-color: #7380ec;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 300ms ease;
+}
+
+.btn-add:hover {
+  background-color: #5a66d6;
+}
+
+.action-buttons-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-edit,
+.btn-delete {
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 300ms ease;
+}
+
+.btn-edit {
+  background-color: #7380ec;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #5a66d6;
+}
+
+.btn-delete {
+  background-color: #ff7782;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #e66e77;
+}
+
+.btn-filter,
+.btn-view-all {
+  background-color: #7380ec;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 300ms ease;
+}
+
+.btn-filter:hover,
+.btn-view-all:hover {
+  background-color: #5a66d6;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .finance-management {

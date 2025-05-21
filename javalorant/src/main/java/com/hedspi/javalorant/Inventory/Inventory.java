@@ -59,14 +59,6 @@ public class Inventory {
             }
         }
         return false;
-    }    
-
-    public double getTotalInventoryValue() {
-        double total = 0;
-        for (Product product : productList) {
-            total += product.getPurchasePrice() * product.getQuantity();
-        }
-        return total;
     }
 
     public List<Product> filterProductsByCategory(String category, List<Product> productList) {
@@ -139,5 +131,21 @@ public class Inventory {
             }
             })
             .toList();
+    }
+
+    public double sumOfProductPurchasePrice() {
+        double sum = 0;
+        for (Product product : productList) {
+            sum += product.getPurchasePrice() * product.getQuantity() ;
+        }
+        return sum;
+    }
+
+    public double sumOfProductSellingPrice() {
+        double total = 0;
+        for (Product product : productList) {
+            total += product.getSellingPrice() * product.getQuantity();
+        }
+        return total;
     }
 }

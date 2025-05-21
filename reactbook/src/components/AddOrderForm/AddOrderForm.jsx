@@ -192,6 +192,12 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
       setError(new Error("Vui lòng điền đầy đủ thông tin"));
       return;
     }
+    for (const item of formData.items) {
+      if (item.quantity <= 0) {
+        setError(new Error("Số lượng tối thiểu là 1"));
+        return;
+      }
+    }
     try {
       if (mode === "detail") {
         console.log("Updating order with ID: ", order.orderID);
@@ -376,7 +382,7 @@ const AddOrderForm = ({ onClose, mode = "add", order = null }) => {
                   onChange={(e) =>
                     setCurrentItem((prev) => ({
                       ...prev,
-                      quantity: Number(e.target.value) || 1,
+                      quantity: Number(e.target.value) || null,
                     }))
                   }
                 />

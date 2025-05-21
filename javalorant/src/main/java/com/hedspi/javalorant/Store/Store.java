@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.hedspi.javalorant.dto.FilterDTO;
@@ -76,14 +77,10 @@ public class Store {
                 user.setFullName(updateUser.getFullName());
                 user.setPhoneNumber(updateUser.getPhoneNumber());
                 user.setRole(updateUser.getRole());
-                switch (user.getRole()) {
-                    case Employee -> {
-                        Employee employee = (Employee) user;
-                        employee.setBasicSalary(((Employee) updateUser).getBasicSalary());
-                        employee.setCoefficient(((Employee) updateUser).getCoefficient());
-                    }
-                    default -> {
-                    }
+                if (Objects.requireNonNull(user.getRole()) == UserRole.Employee) {
+                    Employee employee = (Employee) user;
+                    employee.setBasicSalary(((Employee) updateUser).getBasicSalary());
+                    employee.setCoefficient(((Employee) updateUser).getCoefficient());
                 }
                 break;
             }
@@ -256,13 +253,11 @@ public class Store {
         orderList.add(newOrder);
     }
 
-    public Invoice generateInvoice(Date invoiceDate, Order order, PaymentMethod paymentMethod, String fullName) {
+    public void generateInvoice(Date invoiceDate, Order order, PaymentMethod paymentMethod, String fullName) {
         if (order != null) {
             Invoice invoice = new Invoice(invoiceDate, order, paymentMethod, (Employee) getUserByfullName(fullName));
             invoiceList.add(invoice);
-            return invoice;
         }
-        return null;
     }
 
     public void addOrder(Order order, PaymentMethod paymentMethod, String fullName) {
@@ -529,43 +524,123 @@ public class Store {
         expenseList.add(expense);
     }
 
+    public void removeExpense(long expenseID) {
+        expenseList.removeIf(expense -> expense.getExpenseID() == expenseID);
+    }
+
+    public void updateExpense(long expenseID, Expense expense) {
+        for (Expense existingExpense : expenseList) {
+            if (existingExpense.getExpenseID() == expenseID) {
+                existingExpense.setAmount(expense.getAmount());
+                existingExpense.setDate(expense.getDate());
+                existingExpense.setDescription(expense.getDescription());
+                existingExpense.setExpenseType(expense.getExpenseType());
+                break;
+            }
+        }
+    }
+
     public double getTotalExpenses() {
         return expenseList.stream()
                 .mapToDouble(Expense::getAmount)
                 .sum();
     }
 
-    public double getRevenueInPeriod(Date startDate, Date endDate) {
-        return invoiceList.stream()
-                .filter(invoice -> invoice.getInvoiceDate().after(startDate) 
-                        && invoice.getInvoiceDate().before(endDate))
-                .mapToDouble(Invoice::getTotalAmount)
-                .sum();
-    }
+    public double getTotalExpensesInPeriod(Date startDate, Date endDate) {
+        if (startDate == null && endDate == null) {
+            return getTotalExpenses();
+        }
 
-    public double getExpensesInPeriod(Date startDate, Date endDate) {
         return expenseList.stream()
-                .filter(expense -> expense.getDate().after(startDate) 
-                        && expense.getDate().before(endDate))
+                .filter(expense -> {
+                    if (startDate != null && endDate == null) {
+                        // Filter expenses after startDate
+                        return expense.getDate().compareTo(startDate) >= 0;
+                    } else if (startDate == null && endDate != null) {
+                        // Filter expenses before endDate
+                        return expense.getDate().compareTo(endDate) <= 0;
+                    } else {
+                        // Filter expenses between startDate and endDate
+                        return expense.getDate().compareTo(startDate) >= 0
+                            && expense.getDate().compareTo(endDate) <= 0;
+                    }
+                })
                 .mapToDouble(Expense::getAmount)
                 .sum();
     }
 
-    public double getCOGSInPeriod(Date startDate, Date endDate) {
-        // Calculate Cost of Goods Sold for the period
-        return orderList.stream()
-                .filter(order -> order.getOrderDate().after(startDate) 
-                        && order.getOrderDate().before(endDate))
-                .flatMap(order -> order.getItems().stream())
-                .mapToDouble(item -> item.getProduct().getPurchasePrice() * item.getQuantity())
+    public double getTotalProductPurchasePrice(){
+        return inventory.sumOfProductPurchasePrice();
+    }
+
+    public double getTotalProductPurchasePriceInPeriod(Date startDate, Date endDate) {
+        // For product purchase price, we currently don't have date information in the inventory
+        // So we'll just return the total regardless of date range
+        return getTotalProductPurchasePrice();
+    }
+
+    public double getTotalEmployeeSalary(){
+        double totalSalary = 0;
+        for(User user : userList){
+            if(user instanceof Employee){
+                totalSalary += ((Employee) user).tinhLuong();
+            }
+        }
+        return totalSalary;
+    }
+
+    public double getTotalEmployeeSalaryInPeriod(Date startDate, Date endDate) {
+        // For employee salary, we don't have date information
+        // So we'll just return the total regardless of date range
+        return getTotalEmployeeSalary();
+    }
+
+    public double getExpenseAndProductPurchasePriceAndEmployeeSalary() { // tổng chi phí
+        return getTotalExpenses() + getTotalProductPurchasePrice() + getTotalEmployeeSalary();
+    }
+
+    public double getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(Date startDate, Date endDate) { // tổng chi phí trong khoảng thời gian
+        return getTotalExpensesInPeriod(startDate, endDate)
+            + getTotalProductPurchasePriceInPeriod(startDate, endDate)
+            + getTotalEmployeeSalaryInPeriod(startDate, endDate);
+    }
+
+    public double getRevenue() { // tổng lợi nhuận
+        return invoiceList.stream()
+                .mapToDouble(Invoice::getTotalAmount)
                 .sum();
     }
 
+    public double getRevenueInPeriod(Date startDate, Date endDate) { // tổng lợi nhuận trong khoảng thời gian
+        if (startDate == null && endDate == null) {
+            return getRevenue();
+        }
+
+        return invoiceList.stream()
+                .filter(invoice -> {
+                    if (startDate != null && endDate == null) {
+                        // Filter invoices after startDate
+                        return invoice.getInvoiceDate().compareTo(startDate) >= 0;
+                    } else if (startDate == null && endDate != null) {
+                        // Filter invoices before endDate
+                        return invoice.getInvoiceDate().compareTo(endDate) <= 0;
+                    } else {
+                        // Filter invoices between startDate and endDate
+                        return invoice.getInvoiceDate().compareTo(startDate) >= 0
+                            && invoice.getInvoiceDate().compareTo(endDate) <= 0;
+                    }
+                })
+                .mapToDouble(Invoice::getTotalAmount)
+                .sum();
+    }
+
+    public double getProfit(){
+        return getRevenue() - getExpenseAndProductPurchasePriceAndEmployeeSalary();
+    }
+
     public double getProfitInPeriod(Date startDate, Date endDate) {
-        double revenue = getRevenueInPeriod(startDate, endDate);
-        double expenses = getExpensesInPeriod(startDate, endDate);
-        double cogs = getCOGSInPeriod(startDate, endDate);
-        return revenue - expenses - cogs;
+        return getRevenueInPeriod(startDate, endDate)
+            - getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(startDate, endDate);
     }
 
 
@@ -625,10 +700,13 @@ public class Store {
 
         // Add Expenses
         Date currentDate = new Date();
-        addExpense(new Expense("Rent", 1000.0, currentDate, "Monthly store rent"));
-        addExpense(new Expense("Utilities", 200.0, currentDate, "Electricity and water"));
-        addExpense(new Expense("Supplies", 150.0, currentDate, "Office supplies"));
-        addExpense(new Expense("Marketing", 300.0, currentDate, "Online advertisements"));
-        addExpense(new Expense("Insurance", 250.0, currentDate, "Store insurance"));
+        addExpense(new Expense("Employee Salaries", 5000.0, currentDate, "Monthly employee salaries"));
+        addExpense(new Expense("Electricity", 300.0, currentDate, "Monthly electricity bill"));
+        addExpense(new Expense("Water", 150.0, currentDate, "Monthly water bill"));
+        addExpense(new Expense("Facility Maintenance", 800.0, currentDate, "Maintenance and repairs of store facilities"));
+        addExpense(new Expense("Employee Salaries", 5200.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month employee salaries"));
+        addExpense(new Expense("Electricity", 280.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month electricity bill"));
+        addExpense(new Expense("Water", 140.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month water bill"));
+        addExpense(new Expense("Facility Maintenance", 500.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month facility maintenance"));
     }
 }
