@@ -69,6 +69,7 @@ public class Order {
     }
 
     public void addItem(OrderItem item) {
+        // Kiểm tra số lượng sẽ được thực hiện ở Store
         items.add(item);
         calculateTotal();
     }

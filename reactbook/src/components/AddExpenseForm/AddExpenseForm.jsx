@@ -2,18 +2,13 @@ import { useState, useEffect } from "react";
 import "./AddExpenseForm.css";
 import { addExpense, updateExpense } from "../../services/FinanceService";
 
-const EXPENSE_TYPES = [
-  "Employee Salaries",
-  "Electricity",
-  "Water",
-  "Facility Maintenance",
-];
+const EXPENSE_TYPES = ["Electricity", "Water", "Facility Maintenance"];
 
 const AddExpenseForm = ({ onClose, mode, expense }) => {
   const [formData, setFormData] = useState({
     expenseType: "",
     amount: "",
-    date: "",
+    date: new Date().toISOString().split("T")[0], // Current date for new expenses
     description: "",
   });
 
@@ -22,7 +17,7 @@ const AddExpenseForm = ({ onClose, mode, expense }) => {
       setFormData({
         expenseType: expense.expenseType,
         amount: expense.amount,
-        date: expense.date.split("T")[0],
+        date: expense.date.split("T")[0], // Keep original date when editing
         description: expense.description,
       });
     }
@@ -82,10 +77,8 @@ const AddExpenseForm = ({ onClose, mode, expense }) => {
             <input
               type="date"
               value={formData.date}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
-              required
+              readOnly
+              style={{ backgroundColor: "#f0f0f0" }}
             />
           </div>
           <div className="form-group">

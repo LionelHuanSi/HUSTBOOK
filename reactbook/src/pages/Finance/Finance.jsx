@@ -5,6 +5,8 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import {
   getExpenses,
   deleteExpense,
+  filterExpense,
+  getTotalEmployeeSalary,
   getTotalExpense,
   getRevenue,
   getProfit,
@@ -12,14 +14,16 @@ import {
 import AddExpenseForm from "../../components/AddExpenseForm/AddExpenseForm";
 
 const Finance = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
   const [finance, setFinance] = useState({
     expense: null,
     revenue: null,
     profit: null,
   });
+  const [salary, setSalary] = useState(0);
   const [filterData, setFilterData] = useState({
-    startDate: "",
-    endDate: "",
+    startDate: "2025-01-01",
+    endDate: new Date().toISOString().split("T")[0],
   });
   const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
   const [expenses, setExpenses] = useState([]);
@@ -37,9 +41,37 @@ const Finance = () => {
   };
 
   useEffect(() => {
+    const fetchFilterExpense = async () => {
+      try {
+        const response = await filterExpense(filterData);
+        setExpenses(response);
+      } catch (error) {
+        setError(error);
+      }
+    };
+    fetchFilterExpense();
+  }, [isFilterButtonClick]);
+
+  useEffect(() => {
     const fetchFinance = async () => {
       setError(null);
       setIsFilterButtonClick(false);
+      if (
+        filterData.startDate < "2025-01-01" ||
+        filterData.endDate > new Date().toISOString().split("T")[0]
+      ) {
+        setError({
+          message:
+            "Không có dữ liệu, ngày bắt đầu phải từ 01-01-2025, ngày kết thúc là ngày hiện tại",
+        });
+        setFinance({
+          expense: 0,
+          revenue: 0,
+          profit: 0,
+        });
+        setSalary(0);
+        return;
+      }
       try {
         console.log("ftDT: ", filterData);
         const response_exp = await getTotalExpense(
@@ -62,6 +94,11 @@ const Finance = () => {
           revenue: response_rev,
           profit: response_pro,
         });
+        const response_sal = await getTotalEmployeeSalary(
+          filterData.startDate,
+          filterData.endDate
+        );
+        setSalary(response_sal);
       } catch (error) {
         setError(error);
       }
@@ -115,21 +152,25 @@ const Finance = () => {
     setSelectedExpense(null);
   };
 
+  if (auth === "invalid") {
+    return (
+      <>
+        <div className="auth">Bạn chưa đăng nhập</div>
+      </>
+    );
+  } else if (auth === "employee") {
+    return (
+      <>
+        <div className="auth">Bạn không có quyền truy cập vào trang này</div>
+      </>
+    );
+  }
+
   return (
     <div className="container">
       <Sidebar />
       <main>
-        <div className="topbar">
-          <div className="search">
-            <label>
-              <input type="text" placeholder="Tìm kiếm..." />
-              <span className="material-symbols-sharp">search</span>
-            </label>
-          </div>
-          <div className="user">
-            <img src="/assets/Customer1.png" alt="" />
-          </div>
-        </div>
+        <div className="topbar"></div>
         <section className="finance-management">
           {error && <div>{error.message}</div>}
           <h1 className="finance-management-title">Quản lý tài chính</h1>
@@ -159,6 +200,15 @@ const Finance = () => {
                   style: "currency",
                   currency: "VND",
                 }).format(finance.profit || 0)}
+              </strong>
+            </div>
+            <div className="summary-item salary">
+              <span>Tổng lương nhân viên</span>
+              <strong style={{ color: "var(--color-expense, #ff7782)" }}>
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(salary || 0)}
               </strong>
             </div>
           </div>

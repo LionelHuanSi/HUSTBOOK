@@ -10,6 +10,7 @@ import { getSortedUsers } from "../../services/UserService";
 import { deleteUser } from "../../services/UserService";
 
 const Employee = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
   const [error, setError] = useState(null);
   const [employee, setEmployee] = useState([]);
   const [filterData, setFilterData] = useState({
@@ -127,21 +128,25 @@ const Employee = () => {
     setSelectedEmployee(null);
   };
 
+  if (auth === "invalid") {
+    return (
+      <>
+        <div className="auth">Bạn chưa đăng nhập</div>
+      </>
+    );
+  } else if (auth === "employee") {
+    return (
+      <>
+        <div className="auth">Bạn không có quyền truy cập vào trang này</div>
+      </>
+    );
+  }
+
   return (
     <div className="container">
       <Sidebar />
       <main>
-        <div className="topbar">
-          <div className="search">
-            <label>
-              <input type="text" placeholder="Tìm kiếm..." />
-              <span className="material-symbols-sharp">search</span>
-            </label>
-          </div>
-          <div className="user">
-            <img src="/assets/Customer1.png" alt="" />
-          </div>
-        </div>
+        <div className="topbar"></div>
         <section className="employee-management">
           {error && <div className="error">{error.message}</div>}
           <h1 className="employee-management-title">Quản lý nhân viên</h1>

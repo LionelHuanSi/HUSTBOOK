@@ -9,6 +9,8 @@ import { getProductsByFilter } from "../../services/InventoryService";
 import { getSortedProducts } from "../../services/InventoryService";
 
 const Inventory = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
+
   const [inventory, setInventory] = useState([]);
   const [filterData, setFilterData] = useState({
     category: "",
@@ -114,22 +116,19 @@ const Inventory = () => {
     }
   };
 
+  if (auth === "invalid") {
+    return (
+      <>
+        <div className="auth">Bạn chưa đăng nhập</div>
+      </>
+    );
+  }
+
   return (
     <div className="container">
       <Sidebar />
       <main>
-        <div className="topbar">
-          <div className="search">
-            <label>
-              <input type="text" placeholder="Tìm kiếm..." />
-              <span className="material-symbols-sharp">search</span>
-            </label>
-          </div>
-          <div className="user">
-            <img src="/assets/Customer1.png" alt="" />
-          </div>
-        </div>
-
+        <div className="topbar"></div>
         <section className="inventory-management">
           {error && (
             <div className="error-message">

@@ -2,13 +2,16 @@ package com.hedspi.javalorant.store;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import com.hedspi.javalorant.dto.FilterDTO;
 import com.hedspi.javalorant.dto.FilterEmployeeDTO;
+import com.hedspi.javalorant.dto.FilterFinanceDTO;
 import com.hedspi.javalorant.dto.FilterInvoiceDTO;
 import com.hedspi.javalorant.dto.FilterOrderDTO;
 import com.hedspi.javalorant.dto.SortEmployeeDTO;
@@ -261,6 +264,14 @@ public class Store {
     }
 
     public void addOrder(Order order, PaymentMethod paymentMethod, String fullName) {
+        for (OrderItem orderItem : order.getItems()){
+            Product product = orderItem.getProduct();
+            if (product.getQuantity() >= orderItem.getQuantity()) {
+                product.setQuantity(product.getQuantity() - orderItem.getQuantity());
+            } else {
+                product.setQuantity(0);
+            }
+        }
         orderList.add(order);
         if (order.isPaid()) {
             generateInvoice(order.getOrderDate(), order, paymentMethod, fullName);
@@ -289,22 +300,6 @@ public class Store {
 
     public List<Order> getOrderList() {
         return orderList;
-    }
-
-    public Order getOrder(long orderID) {
-        return orderList.stream()
-                .filter(order -> order.getOrderID() == orderID)
-                .findFirst()
-                .orElse(null);
-    }
-
-    public void addItemToOrder(long orderID, long productID, int quantity) {
-        Order order = getOrder(orderID);
-        Product product = inventory.getProductByID(productID);
-        if (order != null && product != null) {
-            OrderItem item = new OrderItem(product, quantity);
-            order.addItem(item);
-        }
     }
 
     public List<Order> filterOrders(FilterOrderDTO filterDTO, List<Order> orderList) {
@@ -540,15 +535,31 @@ public class Store {
         }
     }
 
-    public double getTotalExpenses() {
-        return expenseList.stream()
-                .mapToDouble(Expense::getAmount)
-                .sum();
+    public List<Expense> filterExpense(FilterFinanceDTO filterDTO, List<Expense> expenseList) {
+        List<Expense> filteredExpenses = new ArrayList<>(expenseList);
+        if (filterDTO.getStartDate() != null && !filterDTO.getStartDate().isEmpty()) {
+            LocalDate startDate = LocalDate.parse(filterDTO.getStartDate());
+            filteredExpenses = filteredExpenses.stream()
+                .filter(expense -> expense.getDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate().isAfter(startDate))
+                    .collect(Collectors.toList());
+        }
+
+        if (filterDTO.getEndDate() != null && !filterDTO.getEndDate().isEmpty()) {
+            LocalDate endDate = LocalDate.parse(filterDTO.getEndDate());
+            filteredExpenses = filteredExpenses.stream()
+                .filter(expense -> expense.getDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate().isBefore(endDate))
+                    .collect(Collectors.toList());
+        }
+        return filteredExpenses;
     }
 
     public double getTotalExpensesInPeriod(Date startDate, Date endDate) {
         if (startDate == null && endDate == null) {
-            return getTotalExpenses();
+            return expenseList.stream()
+                    .mapToDouble(Expense::getAmount)
+                    .sum();
         }
 
         return expenseList.stream()
@@ -569,15 +580,11 @@ public class Store {
                 .sum();
     }
 
-    public double getTotalProductPurchasePrice(){
-        return inventory.sumOfProductPurchasePrice();
-    }
-
-    public double getTotalProductPurchasePriceInPeriod(Date startDate, Date endDate) {
+    /*public double getTotalProductPurchasePriceInPeriod(Date startDate, Date endDate) {
         // For product purchase price, we currently don't have date information in the inventory
         // So we'll just return the total regardless of date range
-        return getTotalProductPurchasePrice();
-    }
+        return inventory.sumOfProductPurchasePrice();
+    }*/
 
     public double getTotalEmployeeSalary(){
         double totalSalary = 0;
@@ -586,34 +593,63 @@ public class Store {
                 totalSalary += ((Employee) user).tinhLuong();
             }
         }
+        System.out.println(totalSalary);
         return totalSalary;
     }
 
     public double getTotalEmployeeSalaryInPeriod(Date startDate, Date endDate) {
-        // For employee salary, we don't have date information
-        // So we'll just return the total regardless of date range
-        return getTotalEmployeeSalary();
-    }
-
-    public double getExpenseAndProductPurchasePriceAndEmployeeSalary() { // tổng chi phí
-        return getTotalExpenses() + getTotalProductPurchasePrice() + getTotalEmployeeSalary();
+        // Default dates if null values are provided
+        Calendar calStart = Calendar.getInstance();
+        Calendar calEnd = Calendar.getInstance();
+        
+        if (startDate == null) {
+            // Default start date: 1/1/2025
+            calStart.set(2025, Calendar.JANUARY, 1);
+        } else {
+            calStart.setTime(startDate);
+        }
+        
+        if (endDate == null) {
+            // Default end date: current date
+            // calEnd already has current date from Calendar.getInstance()
+        } else {
+            calEnd.setTime(endDate);
+        }
+        
+        // Count how many 20th days fall between the start and end dates
+        int count = 0;
+        Calendar paymentDate = Calendar.getInstance();
+        paymentDate.setTime(calStart.getTime());
+        
+        // Set to the 20th of the current month
+        paymentDate.set(Calendar.DAY_OF_MONTH, 20);
+        
+        // If start date is after the 20th of its month, move to 20th of next month
+        if (calStart.get(Calendar.DAY_OF_MONTH) > 20) {
+            paymentDate.add(Calendar.MONTH, 1);
+        }
+        
+        // Count all 20th days until end date
+        while (paymentDate.getTime().compareTo(calEnd.getTime()) <= 0) {
+            count++;
+            paymentDate.add(Calendar.MONTH, 1);
+        }
+        
+        // Multiply the base salary by the number of payment dates
+        return getTotalEmployeeSalary() * count;
     }
 
     public double getExpenseAndProductPurchasePriceAndEmployeeSalaryInPeriod(Date startDate, Date endDate) { // tổng chi phí trong khoảng thời gian
         return getTotalExpensesInPeriod(startDate, endDate)
-            + getTotalProductPurchasePriceInPeriod(startDate, endDate)
+            /*+ getTotalProductPurchasePriceInPeriod(startDate, endDate)*/
             + getTotalEmployeeSalaryInPeriod(startDate, endDate);
-    }
-
-    public double getRevenue() { // tổng lợi nhuận
-        return invoiceList.stream()
-                .mapToDouble(Invoice::getTotalAmount)
-                .sum();
     }
 
     public double getRevenueInPeriod(Date startDate, Date endDate) { // tổng lợi nhuận trong khoảng thời gian
         if (startDate == null && endDate == null) {
-            return getRevenue();
+            return invoiceList.stream()
+                    .mapToDouble(Invoice::getTotalAmount)
+                    .sum();
         }
 
         return invoiceList.stream()
@@ -632,10 +668,6 @@ public class Store {
                 })
                 .mapToDouble(Invoice::getTotalAmount)
                 .sum();
-    }
-
-    public double getProfit(){
-        return getRevenue() - getExpenseAndProductPurchasePriceAndEmployeeSalary();
     }
 
     public double getProfitInPeriod(Date startDate, Date endDate) {
@@ -661,7 +693,7 @@ public class Store {
 
     public void initializeData() {
         // Initialize Users
-        addUser(new User("admin", "admin123", "Nguyễn Văn A", "0123456789"));
+        addUser(new User("admin", "admin12345", "Nguyễn Văn A", "0123456789"));
         addUser(new Employee("employee1", "e123", "Nguyễn Văn An", "0123456789", 5000000, 1));
         addUser(new Employee("employee2", "e123", "Nguyễn Văn Anh", "0123456789", 5000000, 1.5));
         addUser(new Employee("employee3", "e123", "Trần Thị Bình", "0987654321", 5000000, 2));
@@ -669,44 +701,194 @@ public class Store {
         addUser(new Employee("employee5", "e123", "Phạm Thị Dung", "0741852963", 5000000, 3));
 
         // Initialize Books
-        addProduct(new Book("The Art of Programming", 10, 35.0, 45.0, "Tech Publications", "Donald Knuth", "978-0201038019"));
-        addProduct(new Book("Clean Code", 15, 28.0, 39.99, "Prentice Hall", "Robert Martin", "978-0132350884"));
-        addProduct(new Book("Design Patterns", 8, 40.0, 54.99, "Addison-Wesley", "Gang of Four", "978-0201633610"));
-        addProduct(new Book("Java Programming", 20, 30.0, 42.99, "O'Reilly", "James Gosling", "978-0596009205"));
-        addProduct(new Book("Python Basics", 25, 25.0, 34.99, "No Starch Press", "Al Sweigart", "978-1593279288"));
-        addProduct(new Book("Data Structures", 12, 45.0, 59.99, "Pearson", "Robert Sedgewick", "978-0321573513"));
-        addProduct(new Book("Machine Learning", 10, 50.0, 69.99, "MIT Press", "Tom Mitchell", "978-0070428072"));
-        addProduct(new Book("Web Development", 18, 35.0, 49.99, "Wiley", "Jennifer Robbins", "978-1118907443"));
-
+        addProduct(new Book("The Art of Programming", 55, 700000.0, 950000.0, "Tech Publications", "Donald Knuth", "978-0201038019"));
+        addProduct(new Book("Clean Code", 60, 600000.0, 850000.0, "Prentice Hall", "Robert Martin", "978-0132350884"));
+        addProduct(new Book("Design Patterns", 50, 850000.0, 1200000.0, "Addison-Wesley", "Gang of Four", "978-0201633610"));
+        addProduct(new Book("Java Programming", 65, 550000.0, 750000.0, "O'Reilly", "James Gosling", "978-0596009205"));
+        addProduct(new Book("Python Basics", 80, 450000.0, 650000.0, "No Starch Press", "Al Sweigart", "978-1593279288"));
+        addProduct(new Book("Data Structures", 52, 900000.0, 1350000.0, "Pearson", "Robert Sedgewick", "978-0321573513"));
+        addProduct(new Book("Machine Learning", 50, 1500000.0, 2500000.0, "MIT Press", "Tom Mitchell", "978-0070428072"));
+        addProduct(new Book("Web Development", 62, 750000.0, 1050000.0, "Wiley", "Jennifer Robbins", "978-1118907443"));
+        
         // Initialize Stationary
-        addProduct(new Stationary("Premium Notebook", 50, 3.0, 5.99, "Moleskine", "Notebook"));
-        addProduct(new Stationary("Gel Pen Set", 100, 1.0, 2.49, "Pilot", "Pen"));
-        addProduct(new Stationary("Color Pencils", 30, 4.0, 7.99, "Faber-Castell", "Pencil"));
-        addProduct(new Stationary("Highlighter Pack", 80, 2.0, 4.99, "Stabilo", "Highlighter"));
-        addProduct(new Stationary("Sticky Notes", 120, 1.5, 3.49, "Post-it", "Notes"));
-        addProduct(new Stationary("Ruler Set", 40, 2.5, 5.49, "Westcott", "Ruler"));
-        addProduct(new Stationary("Eraser Pack", 150, 0.5, 1.99, "Pentel", "Eraser"));
-        addProduct(new Stationary("Scissors", 35, 3.5, 6.99, "Fiskars", "Scissors"));
-
+        addProduct(new Stationary("Premium Notebook", 120, 150000.0, 220000.0, "Moleskine", "Notebook"));
+        addProduct(new Stationary("Gel Pen Set", 200, 80000.0, 150000.0, "Pilot", "Pen"));
+        addProduct(new Stationary("Color Pencils", 150, 130000.0, 220000.0, "Faber-Castell", "Pencil"));
+        addProduct(new Stationary("Highlighter Pack", 180, 100000.0, 180000.0, "Stabilo", "Highlighter"));
+        addProduct(new Stationary("Sticky Notes", 250, 60000.0, 120000.0, "Post-it", "Notes"));
+        addProduct(new Stationary("Ruler Set", 160, 90000.0, 160000.0, "Westcott", "Ruler"));
+        addProduct(new Stationary("Eraser Pack", 300, 50000.0, 100000.0, "Pentel", "Eraser"));
+        addProduct(new Stationary("Scissors", 140, 120000.0, 200000.0, "Fiskars", "Scissors"));
+        
         // Initialize Toys
-        addProduct(new Toy("LEGO Classic Set", 20, 15.0, 24.99, "LEGO", 5));
-        addProduct(new Toy("Rubik's Cube", 40, 5.0, 9.99, "Rubik's", 8));
-        addProduct(new Toy("Chess Set", 15, 12.0, 19.99, "Classic Games", 7));
-        addProduct(new Toy("Remote Control Car", 10, 25.0, 39.99, "Hot Wheels", 6));
-        addProduct(new Toy("Monopoly Board", 25, 18.0, 29.99, "Hasbro", 8));
-        addProduct(new Toy("Barbie Doll", 30, 15.0, 24.99, "Mattel", 4));
-        addProduct(new Toy("Building Blocks", 35, 20.0, 34.99, "Mega Bloks", 3));
-        addProduct(new Toy("Science Kit", 15, 30.0, 49.99, "National Geographic", 10));
+        addProduct(new Toy("LEGO Classic Set", 60, 750000.0, 1200000.0, "LEGO", 5));
+        addProduct(new Toy("Rubik's Cube", 100, 150000.0, 250000.0, "Rubik's", 8));
+        addProduct(new Toy("Chess Set", 70, 350000.0, 550000.0, "Classic Games", 7));
+        addProduct(new Toy("Remote Control Car", 55, 1200000.0, 1800000.0, "Hot Wheels", 6));
+        addProduct(new Toy("Monopoly Board", 80, 350000.0, 600000.0, "Hasbro", 8));
+        addProduct(new Toy("Barbie Doll", 90, 400000.0, 650000.0, "Mattel", 4));
+        addProduct(new Toy("Building Blocks", 110, 300000.0, 480000.0, "Mega Bloks", 3));
+        addProduct(new Toy("Science Kit", 50, 1000000.0, 1500000.0, "National Geographic", 10));
+
+        // Add orders and invoices
+        String[] customerNames = {
+            "Nguyễn Văn Minh", "Trần Thị Hương", "Lê Thành Nam", "Phạm Hồng Hà", "Hoàng Văn Đức",
+            "Vũ Thị Mai", "Đặng Quốc Tuấn", "Bùi Thị Lan", "Ngô Đình Phong", "Dương Thị Thảo",
+            "Đỗ Văn Hoàng", "Hồ Thị Ngọc", "Phan Văn Tú", "Trương Minh Anh", "Võ Thị Kim",
+            "Đinh Văn Bình", "Lý Thị Hà", "Nguyễn Minh Quân", "Trần Văn Tâm", "Lê Thị Thanh"
+        };
+        
+        String[] contactInfo = {
+            "0987654321", "0912345678", "0965432178", "0943215678", "0978563412",
+            "0932145678", "0954321876", "0967891234", "0945678123", "0923456789",
+            "0956781234", "0934567812", "0978123456", "0965432187", "0943215678",
+            "0912876543", "0967812345", "0923451789", "0956789123", "0945671234"
+        };
+        
+        // Mảng các phương thức thanh toán
+        PaymentMethod[] paymentMethods = PaymentMethod.values();
+        
+        // Lấy danh sách sách (lọc từ danh sách sản phẩm)
+        List<Product> booksList = inventory.getAllProducts().stream()
+                .filter(product -> product instanceof Book)
+                .toList();
+        
+        // Lấy danh sách nhân viên
+        List<User> employeeList = userList.stream()
+                .filter(user -> user.getRole() == UserRole.Employee)
+                .toList();
+        
+        // Random để tạo dữ liệu ngẫu nhiên
+        Random random = new Random();
+        
+        // Tạo hàm helper để lấy ngày ngẫu nhiên từ 1/1/2025 đến 22/5/2025
+        Calendar startCal = Calendar.getInstance();
+        startCal.set(2025, Calendar.JANUARY, 1);
+        Calendar endCal = Calendar.getInstance();
+        endCal.set(2025, Calendar.MAY, 22);
+        
+        long startMillis = startCal.getTimeInMillis();
+        long endMillis = endCal.getTimeInMillis();
+        
+        // Tạo 100 đơn hàng và hóa đơn
+        for (int i = 0; i < 100; i++) {
+            // Tạo ngày đặt hàng ngẫu nhiên
+            long randomMillis = startMillis + (long) (random.nextDouble() * (endMillis - startMillis));
+            Date orderDate = new Date(randomMillis);
+            
+            // Tạo thông tin khách hàng ngẫu nhiên
+            int customerIndex = random.nextInt(customerNames.length);
+            CustomerInfor customerInfo = new CustomerInfor(
+                customerNames[customerIndex], 
+                contactInfo[customerIndex]
+            );
+            
+            // Tạo đơn hàng mới
+            Order order = new Order(orderDate, customerInfo);
+            
+            // Số lượng sách trong đơn hàng (1-5)
+            int numberOfBooks = random.nextInt(5) + 1;
+            
+            // Thêm sách vào đơn hàng
+            for (int j = 0; j < numberOfBooks; j++) {
+                // Chọn sách ngẫu nhiên
+                Product book = booksList.get(random.nextInt(booksList.size()));
+                
+                // Số lượng của mỗi sách (1-5)
+                int quantity = random.nextInt(5) + 1;
+                
+                // Thêm vào đơn hàng
+                order.addItem(new OrderItem(book, quantity));
+            }
+            
+            // Tính tổng tiền
+            order.calculateTotal();
+            
+            // Đặt trạng thái đã thanh toán
+            order.setIsPaid(true);
+            
+            // Thêm đơn hàng vào danh sách
+            orderList.add(order);
+            
+            // Chọn phương thức thanh toán ngẫu nhiên
+            PaymentMethod paymentMethod = paymentMethods[random.nextInt(paymentMethods.length)];
+            
+            // Chọn nhân viên ngẫu nhiên
+            User employee = employeeList.get(random.nextInt(employeeList.size()));
+            
+            // Tạo hóa đơn
+            Invoice invoice = new Invoice(orderDate, order, paymentMethod, (Employee) employee);
+            
+            // Thêm hóa đơn vào danh sách
+            invoiceList.add(invoice);
+        }
+        
+        // Add orders and invoices
+        
 
         // Add Expenses
-        Date currentDate = new Date();
-        addExpense(new Expense("Employee Salaries", 5000.0, currentDate, "Monthly employee salaries"));
-        addExpense(new Expense("Electricity", 300.0, currentDate, "Monthly electricity bill"));
-        addExpense(new Expense("Water", 150.0, currentDate, "Monthly water bill"));
-        addExpense(new Expense("Facility Maintenance", 800.0, currentDate, "Maintenance and repairs of store facilities"));
-        addExpense(new Expense("Employee Salaries", 5200.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month employee salaries"));
-        addExpense(new Expense("Electricity", 280.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month electricity bill"));
-        addExpense(new Expense("Water", 140.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month water bill"));
-        addExpense(new Expense("Facility Maintenance", 500.0, new Date(currentDate.getTime() - 30L * 24 * 60 * 60 * 1000), "Previous month facility maintenance"));
+        // Tạo chi phí từ tháng 1/2025 đến tháng 5/2025
+        Calendar cal = Calendar.getInstance();
+        
+        // Tháng 1/2025
+        cal.set(2025, Calendar.JANUARY, 5);
+        addExpense(new Expense("Electricity", 3200000.0, cal.getTime(), "Tiền điện tháng 1/2025"));
+        addExpense(new Expense("Water", 1500000.0, cal.getTime(), "Tiền nước tháng 1/2025"));
+        addExpense(new Expense("Facility Maintenance", 8500000.0, cal.getTime(), "Bảo trì cơ sở vật chất tháng 1/2025"));
+        
+        // Tháng 2/2025
+        cal.set(2025, Calendar.FEBRUARY, 8);
+        addExpense(new Expense("Electricity", 3350000.0, cal.getTime(), "Tiền điện tháng 2/2025"));
+        addExpense(new Expense("Water", 1600000.0, cal.getTime(), "Tiền nước tháng 2/2025"));
+        addExpense(new Expense("Facility Maintenance", 2500000.0, cal.getTime(), "Bảo trì cơ sở vật chất tháng 2/2025"));
+        
+        // Tháng 3/2025
+        cal.set(2025, Calendar.MARCH, 10);
+        addExpense(new Expense("Electricity", 3500000.0, cal.getTime(), "Tiền điện tháng 3/2025"));
+        addExpense(new Expense("Water", 1750000.0, cal.getTime(), "Tiền nước tháng 3/2025"));
+        addExpense(new Expense("Facility Maintenance", 5200000.0, cal.getTime(), "Bảo trì cơ sở vật chất tháng 3/2025"));
+        
+        // Tháng 4/2025
+        cal.set(2025, Calendar.APRIL, 15);
+        addExpense(new Expense("Electricity", 3650000.0, cal.getTime(), "Tiền điện tháng 4/2025"));
+        addExpense(new Expense("Water", 1800000.0, cal.getTime(), "Tiền nước tháng 4/2025"));
+        addExpense(new Expense("Facility Maintenance", 6800000.0, cal.getTime(), "Bảo trì cơ sở vật chất tháng 4/2025"));
+        
+        // Tháng 5/2025
+        cal.set(2025, Calendar.MAY, 20);
+        addExpense(new Expense("Electricity", 3800000.0, cal.getTime(), "Tiền điện tháng 5/2025"));
+        addExpense(new Expense("Water", 1900000.0, cal.getTime(), "Tiền nước tháng 5/2025"));
+        addExpense(new Expense("Facility Maintenance", 7500000.0, cal.getTime(), "Bảo trì cơ sở vật chất tháng 5/2025"));
+        
+        // Chi phí phát sinh
+        cal.set(2025, Calendar.JANUARY, 15);
+        addExpense(new Expense("Emergency Repair", 5600000.0, cal.getTime(), "Sửa chữa khẩn cấp hệ thống ống nước"));
+        
+        cal.set(2025, Calendar.FEBRUARY, 22);
+        addExpense(new Expense("Security System", 18000000.0, cal.getTime(), "Lắp đặt hệ thống camera an ninh mới"));
+        
+        cal.set(2025, Calendar.MARCH, 28);
+        addExpense(new Expense("Pest Control", 2800000.0, cal.getTime(), "Dịch vụ diệt côn trùng quý 1"));
+        
+        cal.set(2025, Calendar.APRIL, 5);
+        addExpense(new Expense("Furniture", 25000000.0, cal.getTime(), "Mua sắm nội thất mới cho khu vực khách hàng"));
+        
+        cal.set(2025, Calendar.MAY, 12);
+        addExpense(new Expense("Insurance Premium", 32000000.0, cal.getTime(), "Phí bảo hiểm hàng năm"));
+        
+        cal.set(2025, Calendar.JANUARY, 25);
+        addExpense(new Expense("Advertising", 12000000.0, cal.getTime(), "Chi phí quảng cáo đầu năm"));
+        
+        cal.set(2025, Calendar.FEBRUARY, 15);
+        addExpense(new Expense("Staff Training", 8500000.0, cal.getTime(), "Đào tạo nhân viên về dịch vụ khách hàng"));
+        
+        cal.set(2025, Calendar.MARCH, 20);
+        addExpense(new Expense("IT Support", 6500000.0, cal.getTime(), "Nâng cấp và bảo trì hệ thống"));
+        
+        cal.set(2025, Calendar.APRIL, 25);
+        addExpense(new Expense("Event", 15000000.0, cal.getTime(), "Tổ chức sự kiện giảm giá lớn"));
+        
+        cal.set(2025, Calendar.MAY, 5);
+        addExpense(new Expense("Office Supplies", 4800000.0, cal.getTime(), "Mua sắm văn phòng phẩm"));
     }
 }

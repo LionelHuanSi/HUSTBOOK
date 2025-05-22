@@ -38,6 +38,27 @@ export const updateExpense = async (expenseID, expenseData) => {
     }
 }
 
+export const filterExpense = async (filter) => {
+    try {
+        const response = await axios.post(`${API_URL}/expenses/filter`, filter);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getTotalEmployeeSalary = async (startDate, endDate) => {
+    try {
+        const response = await axios.post(`${API_URL}/finances/salary`,{
+            startDate,
+            endDate,
+        })
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const getTotalExpense = async (startDate, endDate) => {
     try {
         const response = await axios.post(`${API_URL}/finances/totalexpense`,{

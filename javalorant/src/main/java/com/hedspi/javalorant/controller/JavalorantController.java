@@ -48,6 +48,21 @@ public class JavalorantController {
 
 
 
+    // auth
+    @PostMapping("/auth")
+    public AuthResponseDTO getAuth(@RequestBody AuthRequestDTO authRequestDTO) {
+        System.out.println("Received authRequestDTO: " + authRequestDTO.toString());
+        if (authRequestDTO.getUsername().equals("admin") && authRequestDTO.getPassword().equals(store.getUserList().get(0).getPassword())) {
+            return new AuthResponseDTO("admin");
+        } else {
+            for (User user : store.getUserList()) {
+                if (user.getUsername().equals(authRequestDTO.getUsername()) && user.getPassword().equals(authRequestDTO.getPassword())) {
+                    return new AuthResponseDTO("employee");
+                }
+            }
+            return new AuthResponseDTO("invalid");
+        }
+    }
 
 
 
@@ -421,6 +436,11 @@ public class JavalorantController {
         return store.getExpenseList();
     }
 
+    @PostMapping("/expenses/filter")
+    public List<Expense> filterExpenses(@RequestBody FilterFinanceDTO filterDTO) {
+        return store.filterExpense(filterDTO, store.getExpenseList());
+    }
+
     @PostMapping("/expenses")
     public void addExpense(@RequestBody ExpenseDTO expenseDTO) throws ParseException {
         System.out.println("Received expenseDTO: " + expenseDTO.toString());
@@ -457,8 +477,39 @@ public class JavalorantController {
     }
 
 
-
     // Financial Reports APIs
+
+    @PostMapping("/finances/salary")
+    public double getSalary(@RequestBody FilterFinanceDTO filterDTO) throws ParseException {
+        String startDateStr = filterDTO.getStartDate();
+        String endDateStr = filterDTO.getEndDate();
+
+        // Xử lý cả null và chuỗi rỗng
+        boolean isStartDateEmpty = startDateStr == null || startDateStr.isEmpty();
+        boolean isEndDateEmpty = endDateStr == null || endDateStr.isEmpty();
+
+        if (isStartDateEmpty && isEndDateEmpty) {
+            return store.getTotalEmployeeSalaryInPeriod(null, null);
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        if (isStartDateEmpty && !isEndDateEmpty) {
+            Date endDate = dateFormat.parse(endDateStr);
+            return store.getTotalEmployeeSalaryInPeriod(null, endDate);
+        }
+
+        if (!isStartDateEmpty && isEndDateEmpty) {
+            Date startDate = dateFormat.parse(startDateStr);
+            return store.getTotalEmployeeSalaryInPeriod(startDate, null);
+        }
+
+        Date startDate = dateFormat.parse(startDateStr);
+        Date endDate = dateFormat.parse(endDateStr);
+        return store.getTotalEmployeeSalaryInPeriod(startDate, endDate);
+    }
+
     @PostMapping("/finances/totalexpense")
     public double getTotalExpense(@RequestBody  FilterFinanceDTO filterDTO) throws ParseException {
         System.out.println("Received filterDTO: " + filterDTO.toString());

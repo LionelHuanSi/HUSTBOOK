@@ -1,5 +1,6 @@
 package com.hedspi.javalorant.inventory;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,5 +148,9 @@ public class Inventory {
             total += product.getSellingPrice() * product.getQuantity();
         }
         return total;
+    }
+
+    public List<Product> getProductList() {
+        return productList;
     }
 }

@@ -9,6 +9,7 @@ import { deleteOrder } from "../../services/OrderService";
 import AddOrderForm from "../../components/AddOrderForm/AddOrderForm";
 
 const Order = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
   const [order, setOrder] = useState([]);
   const [error, setError] = useState(null);
 
@@ -126,21 +127,19 @@ const Order = () => {
     setSelectedOrder(null);
   };
 
+  if (auth === "invalid") {
+    return (
+      <>
+        <div className="auth">Bạn chưa đăng nhập</div>
+      </>
+    );
+  }
+
   return (
     <div className="container">
       <Sidebar />
       <main>
-        <div className="topbar">
-          <div className="search">
-            <label>
-              <input type="text" placeholder="Tìm kiếm..." />
-              <span className="material-symbols-sharp">search</span>
-            </label>
-          </div>
-          <div className="user">
-            <img src="/assets/Customer1.png" alt="" />
-          </div>
-        </div>
+        <div className="topbar"></div>
         <section className="order-management">
           {error && (
             <div className="error-message">

@@ -1,9 +1,34 @@
-import React from "react";
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 import "../../styles/base.css";
 
 const Sidebar = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
+
+  const menuItems = [
+    { path: "/inventory", icon: "store", text: "Quản lý kho" },
+    { path: "/order", icon: "receipt_long", text: "Quản lý đơn hàng" },
+    { path: "/invoice", icon: "receipt", text: "Quản lý hóa đơn" },
+    {
+      path: "/employee",
+      icon: "badge",
+      text: "Quản lý nhân viên",
+      adminOnly: true,
+    },
+    {
+      path: "/finance",
+      icon: "request_quote",
+      text: "Quản lý tài chính",
+      adminOnly: true,
+    },
+    { path: "/", icon: "logout", text: "Đăng xuất" },
+  ];
+
+  const filteredMenuItems = menuItems.filter(
+    (item) => !item.adminOnly || auth !== "employee"
+  );
+
   return (
     <aside>
       <div className="top">
@@ -15,18 +40,7 @@ const Sidebar = () => {
         </div>
       </div>
       <div className="slidebar">
-        {[
-          { path: "/inventory", icon: "store", text: "Quản lý kho" },
-          { path: "/order", icon: "receipt_long", text: "Quản lý đơn hàng" },
-          { path: "/invoice", icon: "receipt", text: "Quản lý hóa đơn" },
-          { path: "/employee", icon: "badge", text: "Quản lý nhân viên" },
-          {
-            path: "/finance",
-            icon: "request_quote",
-            text: "Quản lý tài chính",
-          },
-          { path: "/logout", icon: "logout", text: "Đăng xuất" },
-        ].map(({ path, icon, text }) => (
+        {filteredMenuItems.map(({ path, icon, text }) => (
           <NavLink
             key={path}
             to={path}

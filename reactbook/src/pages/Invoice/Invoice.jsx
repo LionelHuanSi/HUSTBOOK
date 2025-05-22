@@ -11,6 +11,8 @@ import {
 } from "../../services/InvoiceService";
 
 const Invoice = () => {
+  const [auth, setAuth] = useState(localStorage.getItem("token"));
+
   const [invoice, setInvoice] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -95,21 +97,19 @@ const Invoice = () => {
     }
   };
 
+  if (auth === "invalid") {
+    return (
+      <>
+        <div className="auth">Bạn chưa đăng nhập</div>
+      </>
+    );
+  }
+
   return (
     <div className="container">
       <Sidebar />
       <main>
-        <div className="topbar">
-          <div className="search">
-            <label>
-              <input type="text" placeholder="Tìm kiếm..." />
-              <span className="material-symbols-sharp">search</span>
-            </label>
-          </div>
-          <div className="user">
-            <img src="/assets/Customer1.png" alt="" />
-          </div>
-        </div>
+        <div className="topbar"></div>
         <section className="bill-management">
           <h1 className="bill-management-title">Quản lý hóa đơn</h1>
           <div className="bill-filters">

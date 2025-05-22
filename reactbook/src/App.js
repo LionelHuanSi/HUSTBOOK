@@ -7,12 +7,14 @@ import Employee from './pages/Employee/Employee';
 import Order from './pages/Order/Order';
 import Invoice from './pages/Invoice/Invoice';
 import Inventory from './pages/Inventory/Inventory';
+import Login from './pages/Login/Login';
 
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Login />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/order" element={<Order />} />
