@@ -97,7 +97,7 @@ const Invoice = () => {
     }
   };
 
-  if (auth === "invalid") {
+  if (auth === "invalid" || auth === null) {
     return (
       <>
         <div className="auth">Bạn chưa đăng nhập</div>

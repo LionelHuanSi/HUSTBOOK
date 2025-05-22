@@ -6,6 +6,10 @@ import "../../styles/base.css";
 const Sidebar = () => {
   const [auth, setAuth] = useState(localStorage.getItem("token"));
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+  };
+
   const menuItems = [
     { path: "/inventory", icon: "store", text: "Quản lý kho" },
     { path: "/order", icon: "receipt_long", text: "Quản lý đơn hàng" },
@@ -22,7 +26,7 @@ const Sidebar = () => {
       text: "Quản lý tài chính",
       adminOnly: true,
     },
-    { path: "/", icon: "logout", text: "Đăng xuất" },
+    { path: "/", icon: "logout", text: "Đăng xuất", onClick: handleLogout },
   ];
 
   const filteredMenuItems = menuItems.filter(
@@ -40,11 +44,12 @@ const Sidebar = () => {
         </div>
       </div>
       <div className="slidebar">
-        {filteredMenuItems.map(({ path, icon, text }) => (
+        {filteredMenuItems.map(({ path, icon, text, onClick }) => (
           <NavLink
             key={path}
             to={path}
             className={({ isActive }) => (isActive ? "active" : "")}
+            onClick={onClick}
           >
             <span className="material-symbols-sharp">{icon}</span>
             <h3>{text}</h3>

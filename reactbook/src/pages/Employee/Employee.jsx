@@ -134,7 +134,7 @@ const Employee = () => {
         <div className="auth">Bạn chưa đăng nhập</div>
       </>
     );
-  } else if (auth === "employee") {
+  } else if (auth === "employee" || auth === null) {
     return (
       <>
         <div className="auth">Bạn không có quyền truy cập vào trang này</div>
